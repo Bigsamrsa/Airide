@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AiRide - Rider Sees Driver Photo</title>
+<title>AiRide - Private Admin Comments</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#0f172a;color:#fff;padding:10px}
@@ -13,22 +13,27 @@ body{background:#0f172a;color:#fff;padding:10px}
 .active{color:#fff}.r-on{background:#0ea5e9}.d-on{background:#22c55e;color:#000}.a-on{background:#a855f7}
 input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff;margin:4px 0}
 .btn{width:100%;padding:10px;border-radius:8px;border:none;font-weight:900;margin-top:4px;font-size:12px}
-.btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-red{background:#ef4444;color:#fff}
+.btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-gold{background:#facc15;color:#000}
 .photo{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #22c55e;display:block;margin:5px auto}
+.big-photo{width:70px;height:70px;border-radius:50%;border:3px solid #22c55e;object-fit:cover}
 .idphoto{width:100%;height:85px;object-fit:cover;border-radius:8px;border:2px solid #334155}
 .upload-box{background:#0f172a;border:2px solid #22c55e;border-radius:10px;padding:8px;text-align:center;margin:5px 0}
 .cam{width:100%;border-radius:8px;background:#000;max-height:200px}
 .badge{padding:3px 8px;border-radius:15px;font-size:10px;font-weight:900}
 .b-pending{background:#facc15;color:#000}.b-verified{background:#22c55e;color:#000}.b-live{background:#ef4444;color:#fff}
-.driver-card{background:#0f172a;padding:10px;border-radius:12px;margin:6px 0;display:flex;gap:8px;border:1px solid #334155}
-.small{opacity:.7;font-size:11px}
+.driver-card{background:#0f172a;padding:10px;border-radius:12px;margin:6px 0;display:flex;gap:8px;border:1px solid #334155;flex-direction:column}
 .rider-driver-card{background:#0f172a;border:2px solid #22c55e;border-radius:14px;padding:10px;margin:8px 0;display:flex;gap:10px;align-items:center}
-.big-photo{width:70px;height:70px;border-radius:50%;border:3px solid #22c55e;object-fit:cover}
-.safety{background:#1a2e1a;border:1px solid #22c55e;border-radius:10px;padding:8px;margin:6px 0;text-align:center}
+.small{opacity:.7;font-size:11px}
+.stars{color:#facc15;font-size:16px}
+.history-item{background:#0f172a;border-radius:10px;padding:8px;margin:5px 0;border-left:3px solid #22c55e;display:flex;gap:8px}
+.rating-box{background:#0f172a;border:2px solid #facc15;border-radius:12px;padding:12px;text-align:center;margin:8px 0}
+.star-btn{font-size:30px;background:none;border:none;color:#334155;cursor:pointer}
+.star-btn.active{color:#facc15}
+.private-box{background:#1a1a0f;border:1px solid #facc15;border-radius:8px;padding:6px;margin-top:5px}
 </style>
 </head>
 <body>
-<div class="card" style="text-align:center"><b>🚗 AiRide - See Driver Photo ✅</b><br><span class="small">Rider Safety - See LIVE verified face before ride</span></div>
+<div class="card" style="text-align:center"><b>🚗 AiRide - Private Comments 🔒</b><br><span class="small">Riders see stars only • Comments private for Admin + Driver</span></div>
 <div class="toggle">
 <button id="bR" onclick="setMode('rider')">Rider</button>
 <button id="bD" onclick="setMode('driver')">Driver</button>
@@ -36,64 +41,31 @@ input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #334155;
 </div>
 
 <div id="riderView">
-<div class="card">💰 Wallet R<span id="wallet">0</span> <input id="vCode" placeholder="Voucher"><button class="btn btn-green" onclick="redeem()">Redeem</button></div>
-
-<div class="card" style="border:2px solid #0ea5e9">
-<b>🚕 Request Ride - See Driver Photo</b>
-<input id="from" placeholder="From e.g. Umlazi"><input id="to" placeholder="To e.g. Durban Central">
-<button class="btn btn-blue" onclick="requestRide()">🔍 Find Verified Drivers Near You</button>
-<div id="rideStatus" class="small"></div>
-</div>
-
-<!-- DRIVERS NEAR YOU - WITH LIVE PHOTOS -->
-<div id="nearbyDrivers" class="card" style="display:none;border:2px solid #22c55e">
-<b>👩‍✈️ Verified Women Drivers Near You - <span style="color:#22c55e">LIVE Photo Verified ✅</span></b>
-<div class="small">Tap to see full profile + book! Safety: Match face to driver!</div>
-<div id="driverList"></div>
-</div>
-
-<!-- SELECTED DRIVER + BOOKING -->
-<div id="selectedDriverView" class="card" style="display:none;border:2px solid #facc15">
-<div id="selectedDriverInfo"></div>
-<div class="safety">
-<b>🛡️ Safety Check Before Entering Car:</b><br>
-<span class="small">1. Check face = photo below?<br>2. Check plate number?<br>3. Share trip with family!</span>
-</div>
-<div style="display:flex;gap:5px"><button class="btn btn-green" style="flex:1" onclick="confirmBooking()">✅ Confirm & Book R<span id="bookFare">0</span></button><button class="btn btn-dark" style="flex:1" onclick="cancelSelection()">Cancel</button></div>
-</div>
-
-<!-- ACTIVE RIDE -->
-<div id="activeRide" class="card" style="display:none;border:2px solid #22c55e;background:#1a2e1a">
-<b>🚗 Ride Confirmed!</b>
-<div id="activeRideInfo"></div>
-<button class="btn btn-blue" onclick="callDriver()">📞 Call Driver</button>
-<button class="btn btn-red" onclick="sos()">🆘 SOS - Share Location</button>
-<button class="btn btn-dark" onclick="completeRide()">✅ Complete Ride</button>
-</div>
-
+<div class="card" style="display:flex;gap:10px"><div style="flex:1">💰 Wallet<br><b style="font-size:22px;color:#22c55e">R<span id="wallet">0</span></b></div><div style="flex:1"><span class="small">Trips: <b id="rTripCount">0</b> • Given: <span id="rAvgRating">5.0⭐</span></span><br><button class="btn btn-dark" style="padding:6px" onclick="showHistory('rider')">📜 My History</button></div></div>
+<div class="card"><input id="vCode" placeholder="Voucher R50"><button class="btn btn-green" onclick="redeem()">Redeem</button></div>
+<div class="card" style="border:2px solid #0ea5e9"><b>🚕 Request Ride - See Driver Photo + Stars Only</b><input id="from" placeholder="From e.g. Umlazi"><input id="to" placeholder="To"><button class="btn btn-blue" onclick="requestRide()">🔍 Find Verified Drivers</button><div id="rideStatus" class="small"></div></div>
+<div id="nearbyDrivers" class="card" style="display:none;border:2px solid #22c55e"><b>👩‍✈️ Verified Drivers - Stars Only (Comments Private)</b><div class="small">Tap to book. Comments are private for Admin safety.</div><div id="driverList"></div></div>
+<div id="selectedDriverView" class="card" style="display:none;border:2px solid #facc15"><div id="selectedDriverInfo"></div><div style="display:flex;gap:5px"><button class="btn btn-green" style="flex:1" onclick="confirmBooking()">✅ Book R<span id="bookFare">0</span></button><button class="btn btn-dark" style="flex:1" onclick="cancelSelection()">Cancel</button></div></div>
+<div id="activeRide" class="card" style="display:none;border:2px solid #22c55e;background:#1a2e1a"><b>🚗 Ride Active</b><div id="activeRideInfo"></div><button class="btn btn-blue" onclick="callDriver()">📞 Call</button><button class="btn btn-red" onclick="sos()">🆘 SOS</button><button class="btn btn-gold" onclick="completeRide()">✅ Arrived - Rate Driver</button></div>
+<div id="riderHistory" class="card" style="display:none"><b>📜 My History</b><div class="small">Total Spent: R<span id="rTotalSpent">0</span> • You see only YOUR comments (private)</div><div id="rHistoryList"></div><button class="btn btn-dark" onclick="hideHistory('rider')">Close</button></div>
+<div id="ratingModal" class="card" style="display:none;border:2px solid #facc15;background:#1a1a0f;position:fixed;top:15%;left:5%;right:5%;z-index:100"><b>⭐ Rate Driver - Comment PRIVATE to Admin Only 🔒</b><div style="text-align:center;margin:8px 0"><img id="ratePhoto" class="photo"><b id="rateName"></b><br><span class="small" style="color:#facc15">🔒 Your comment goes to Admin only, NOT public!</span></div><div style="text-align:center"><button class="star-btn" onclick="setStars(1)">★</button><button class="star-btn" onclick="setStars(2)">★</button><button class="star-btn" onclick="setStars(3)">★</button><button class="star-btn" onclick="setStars(4)">★</button><button class="star-btn" onclick="setStars(5)">★</button></div><div style="text-align:center;margin:6px 0"><span id="starText">Tap stars</span></div><input id="rateComment" placeholder="Private comment to Admin e.g. Safe, but drove fast"><div style="display:flex;gap:5px"><button class="btn btn-green" style="flex:1" onclick="submitRating()">Submit Private Rating 🔒</button><button class="btn btn-dark" style="flex:1" onclick="closeRating()">Skip</button></div></div>
 </div>
 
 <div id="driverView" style="display:none">
-<div id="regForm" class="card" style="border:2px solid #22c55e">
-<b>👩‍✈️ Driver Register LIVE</b>
-<div style="background:#0f172a;padding:6px;border-radius:6px;border:1px solid #0ea5e9;margin:5px 0">
-<div style="display:flex;gap:4px"><input id="dEmail" type="email" placeholder="email@gmail.com" style="flex:1"><button class="btn btn-blue" style="width:80px" onclick="sendEmailCode()">Send</button></div>
-<div id="otpSection" style="display:none"><div style="display:flex;gap:4px;margin-top:4px"><input id="otpInput" placeholder="code" style="flex:1"><button class="btn btn-green" style="width:70px" onclick="verifyEmailCode()">Verify</button></div><div class="small">Code: <b id="demoCode" style="color:#22c55e"></b></div></div>
-<div id="emailVerifiedMsg" style="display:none;color:#22c55e;text-align:center">✅ <span id="verifiedEmailShow"></span></div>
-</div>
-<div class="upload-box"><b>🤳 SELFIE LIVE</b><video id="vidSelfie" class="cam" autoplay playsinline style="display:none"></video><canvas id="canSelfie" style="display:none"></canvas><img id="prevSelfie" class="photo" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('selfie')">📷 Open Cam</button><button class="btn btn-green" style="flex:1;display:none" id="capSelfie" onclick="takePhoto('selfie')">✅ Capture</button></div><div class="small" id="statusSelfie"></div></div>
-<div class="upload-box"><b>🪪 ID FRONT</b><video id="vidIDF" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDF" style="display:none"></canvas><img id="prevIDF" class="idphoto" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('idfront')">📷 Open Cam</button><button class="btn btn-green" style="flex:1;display:none" id="capIDF" onclick="takePhoto('idfront')">✅ Capture</button></div></div>
-<div class="upload-box"><b>🪪 ID BACK</b><video id="vidIDB" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDB" style="display:none"></canvas><img id="prevIDB" class="idphoto" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('idback')">📷 Open Cam</button><button class="btn btn-green" style="flex:1;display:none" id="capIDB" onclick="takePhoto('idback')">✅ Capture</button></div></div>
-<input id="dName" placeholder="Full Name *"><input id="dPhone" placeholder="WhatsApp *"><input id="dID" placeholder="ID *"><select id="dCar"><option value="">Car Type *</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other</option></select><input id="dPlate" placeholder="Plate *"><select id="dArea"><option value="">Area *</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option></select><label class="small"><input type="checkbox" id="dWoman"> Confirm live photos real</label><button class="btn btn-green" onclick="registerDriver()">📤 SUBMIT</button><div id="regMsg" class="small" style="color:#ef4444;text-align:center"></div><div class="small" style="text-align:center">Progress: <span id="kycProg">0/4</span></div>
-</div>
-<div id="driverDash" style="display:none"><div class="card" style="text-align:center"><img id="dPhotoShow" class="photo"><div id="verBadge"></div><b id="dNameShow"></b><br><span class="small" id="dInfoShow"></span><div id="verMsg" class="card" style="background:#0f172a"></div><button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()" style="display:none">🟢 Go ONLINE</button><button class="btn btn-dark" onclick="editDriver()">Resubmit</button></div><div class="card">Requests <span id="reqCount">0</span><div id="requests"></div></div></div>
+<div id="regForm" class="card" style="border:2px solid #22c55e"><b>👩‍✈️ Driver Register LIVE</b><div style="display:flex;gap:4px"><input id="dEmail" type="email" placeholder="email@gmail.com" style="flex:1"><button class="btn btn-blue" style="width:80px" onclick="sendEmailCode()">Send</button></div><div id="otpSection" style="display:none"><div style="display:flex;gap:4px;margin-top:4px"><input id="otpInput" placeholder="code" style="flex:1"><button class="btn btn-green" style="width:70px" onclick="verifyEmailCode()">Verify</button></div><div class="small">Code: <b id="demoCode" style="color:#22c55e"></b></div></div><div id="emailVerifiedMsg" style="display:none;color:#22c55e;text-align:center">✅ <span id="verifiedEmailShow"></span></div>
+<div class="upload-box"><b>🤳 SELFIE LIVE</b><video id="vidSelfie" class="cam" autoplay playsinline style="display:none"></video><canvas id="canSelfie" style="display:none"></canvas><img id="prevSelfie" class="photo" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('selfie')">📷 Open</button><button class="btn btn-green" style="flex:1;display:none" id="capSelfie" onclick="takePhoto('selfie')">✅ Capture</button></div></div>
+<div class="upload-box"><b>🪪 ID FRONT</b><video id="vidIDF" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDF" style="display:none"></canvas><img id="prevIDF" class="idphoto" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('idfront')">📷 Open</button><button class="btn btn-green" style="flex:1;display:none" id="capIDF" onclick="takePhoto('idfront')">✅ Capture</button></div></div>
+<div class="upload-box"><b>🪪 ID BACK</b><video id="vidIDB" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDB" style="display:none"></canvas><img id="prevIDB" class="idphoto" style="display:none"><div style="display:flex;gap:4px"><button class="btn btn-blue" style="flex:1" onclick="startCam('idback')">📷 Open</button><button class="btn btn-green" style="flex:1;display:none" id="capIDB" onclick="takePhoto('idback')">✅ Capture</button></div></div>
+<input id="dName" placeholder="Full Name *"><input id="dPhone" placeholder="WhatsApp *"><input id="dID" placeholder="ID *"><select id="dCar"><option value="">Car Type *</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other</option></select><input id="dPlate" placeholder="Plate *"><select id="dArea"><option value="">Area *</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option></select><label class="small"><input type="checkbox" id="dWoman"> Confirm live photos real</label><button class="btn btn-green" onclick="registerDriver()">📤 SUBMIT</button><div id="regMsg" class="small" style="color:#ef4444;text-align:center"></div></div>
+<div id="driverDash" style="display:none"><div class="card" style="text-align:center"><img id="dPhotoShow" class="photo"><div id="verBadge"></div><b id="dNameShow"></b><br><span class="small" id="dInfoShow"></span><br><div style="background:#0f172a;border-radius:8px;padding:6px;margin:6px 0"><span class="stars" id="dStars">★★★★★</span> <b id="dRating">5.0</b> (<span id="dRatingCount">0 ratings</span>)<br><span class="small">Earnings: R<span id="dEarnings">0</span> • Trips: <span id="dTripCount">0</span></span></div><div id="verMsg" class="card" style="background:#0f172a"></div><button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()" style="display:none">🟢 Go ONLINE</button><div style="display:flex;gap:4px"><button class="btn btn-dark" style="flex:1" onclick="showHistory('driver')">📜 My Private Ratings</button><button class="btn btn-dark" style="flex:1" onclick="editDriver()">Resubmit</button></div></div><div class="card"><b>Requests <span id="reqCount">0</span></b><div id="requests"></div></div><div id="driverHistory" class="card" style="display:none"><b>📜 My Private Feedback 🔒 (Only You & Admin)</b><div class="small">Total Earned: R<span id="dTotalEarned">0</span> • Rating: <span id="dAvgRating">5.0⭐</span></div><div id="dHistoryList"></div><div id="dRatingsList"></div><button class="btn btn-dark" onclick="hideHistory('driver')">Close</button></div></div>
 </div>
 
 <div id="adminView" style="display:none">
-<div class="card">👑 ADMIN <div style="display:flex;gap:5px;text-align:center;margin-top:5px"><div style="flex:1;background:#0f172a;padding:5px;border-radius:6px"><b id="aDrivers">0</b><br><span class="small">Total</span></div><div style="flex:1;background:#1a2e1a;padding:5px;border-radius:6px"><b id="aVerified">0</b><br><span class="small">OK</span></div><div style="flex:1;background:#2e2a1a;padding:5px;border-radius:6px"><b id="aPending">0</b><br><span class="small">Pending</span></div></div></div>
+<div class="card">👑 ADMIN - Private Comments 🔒<div style="display:flex;gap:5px;text-align:center;margin-top:5px"><div style="flex:1;background:#0f172a;padding:5px;border-radius:6px"><b id="aDrivers">0</b><br><span class="small">Drivers</span></div><div style="flex:1;background:#1a2e1a;padding:5px;border-radius:6px"><b id="aVerified">0</b><br><span class="small">OK</span></div><div style="flex:1;background:#2e2a1a;padding:5px;border-radius:6px"><b id="aPending">0</b><br><span class="small">Pending</span></div><div style="flex:1;background:#1a1a2e;padding:5px;border-radius:6px"><b id="aTrips">0</b><br><span class="small">Trips</span></div></div></div>
 <div class="card"><b>🔍 Pending</b><div id="aPendingList"></div></div>
-<div class="card"><b>✅ Verified</b><div id="aVerifiedList"></div></div>
-<div class="card"><button class="btn btn-red" onclick="clearAll()">RESET</button></div>
+<div class="card"><b>✅ Verified - Private Comments Only Admin Sees</b><div id="aVerifiedList"></div></div>
+<div class="card"><b>📜 All Trips + Private Comments</b><div id="aTripsList"></div></div>
+<div class="card"><button class="btn btn-red" onclick="clearAll()">RESET ALL</button></div>
 </div>
 
 <script>
@@ -106,102 +78,117 @@ let verifiedEmail=localStorage.getItem('verifiedEmail')||'';
 let currentOTP=localStorage.getItem('currentOTP')||'';
 let streams={};let selectedDriver=null;let activeRideData=JSON.parse(localStorage.getItem('activeRide')||'null');
 let rides=JSON.parse(localStorage.getItem('rides')||'[]');
+let tripHistory=JSON.parse(localStorage.getItem('tripHistory')||'[]');
+let ratings=JSON.parse(localStorage.getItem('ratings')||'[]');
+let currentStars=0;
 
-function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('photos',JSON.stringify(photos));localStorage.setItem('emailVerified',emailVerified);localStorage.setItem('verifiedEmail',verifiedEmail);localStorage.setItem('currentOTP',currentOTP);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('activeRide',JSON.stringify(activeRideData));upd();}
-function upd(){try{document.getElementById('wallet').innerText=wallet.toFixed(2);document.getElementById('aDrivers').innerText=drivers.length;document.getElementById('aVerified').innerText=drivers.filter(d=>d.status==='verified').length;document.getElementById('aPending').innerText=drivers.filter(d=>d.status==='pending').length;document.getElementById('reqCount').innerText=rides.length;}catch(e){}let c=0;if(emailVerified)c++;if(photos.selfie)c++;if(photos.idfront)c++;if(photos.idback)c++;try{document.getElementById('kycProg').innerText=c+'/4';}catch(e){}}
-
+function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('photos',JSON.stringify(photos));localStorage.setItem('emailVerified',emailVerified);localStorage.setItem('verifiedEmail',verifiedEmail);localStorage.setItem('currentOTP',currentOTP);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('activeRide',JSON.stringify(activeRideData));localStorage.setItem('tripHistory',JSON.stringify(tripHistory));localStorage.setItem('ratings',JSON.stringify(ratings));upd();}
+function upd(){
+ try{
+  document.getElementById('wallet').innerText=wallet.toFixed(2);
+  document.getElementById('aDrivers').innerText=drivers.length;
+  document.getElementById('aVerified').innerText=drivers.filter(d=>d.status==='verified').length;
+  document.getElementById('aPending').innerText=drivers.filter(d=>d.status==='pending').length;
+  document.getElementById('aTrips').innerText=tripHistory.length;
+  document.getElementById('reqCount').innerText=rides.length;
+  document.getElementById('rTripCount').innerText=tripHistory.filter(t=>t.rider==='me').length;
+  let rt=ratings.filter(r=>r.toDriver===curDriver?.id);
+  if(rt.length){
+   let avg=(rt.reduce((s,r)=>s+r.stars,0)/rt.length).toFixed(1);
+   document.getElementById('dRating').innerText=avg;
+   document.getElementById('dRatingCount').innerText=rt.length+' ratings';
+   document.getElementById('dStars').innerText='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg));
+   document.getElementById('dAvgRating').innerText=avg+'⭐';
+   document.getElementById('dEarnings').innerText=tripHistory.filter(t=>t.driverId===curDriver?.id).reduce((s,t)=>s+t.fare,0);
+   document.getElementById('dTripCount').innerText=tripHistory.filter(t=>t.driverId===curDriver?.id).length;
+  }
+  document.getElementById('rTotalSpent').innerText=tripHistory.filter(t=>t.rider==='me').reduce((s,t)=>s+t.fare,0);
+  let given=ratings.filter(r=>r.fromRider==='me');
+  if(given.length)document.getElementById('rAvgRating').innerText=(given.reduce((s,r)=>s+r.stars,0)/given.length).toFixed(1)+'⭐';
+ }catch(e){}
+ let c=0;if(emailVerified)c++;if(photos.selfie)c++;if(photos.idfront)c++;if(photos.idback)c++;try{document.getElementById('kycProg').innerText=c+'/4';}catch(e){}
+}
 async function startCam(type){try{let vid=document.getElementById(type==='selfie'?'vidSelfie':type==='idfront'?'vidIDF':'vidIDB');let btn=document.getElementById(type==='selfie'?'capSelfie':type==='idfront'?'capIDF':'capIDB');if(streams[type])streams[type].getTracks().forEach(t=>t.stop());let stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:type==='selfie'?'user':'environment'},audio:false});streams[type]=stream;vid.srcObject=stream;vid.style.display='block';btn.style.display='block';}catch(err){alert('Allow camera: '+err.message);}}
-function takePhoto(type){let vid=document.getElementById(type==='selfie'?'vidSelfie':type==='idfront'?'vidIDF':'vidIDB');let can=document.getElementById(type==='selfie'?'canSelfie':type==='idfront'?'canIDF':'canIDB');let prev=document.getElementById(type==='selfie'?'prevSelfie':type==='idfront'?'prevIDF':'prevIDB');let btn=document.getElementById(type==='selfie'?'capSelfie':type==='idfront'?'capIDF':'capIDB');can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext('2d').drawImage(vid,0,0);let tmp=document.createElement('canvas');tmp.width=500;tmp.height=500*can.height/can.width;tmp.getContext('2d').drawImage(can,0,0,tmp.width,tmp.height);let data=tmp.toDataURL('image/jpeg',0.7);photos[type]=data;prev.src=data;prev.style.display='block';vid.style.display='none';btn.style.display='none';if(streams[type])streams[type].getTracks().forEach(t=>t.stop());save();}
-
+function takePhoto(type){let vid=document.getElementById(type==='selfie'?'vidSelfie':type==='idfront'?'vidIDF':'vidIDB');let can=document.getElementById(type==='selfie'?'canSelfie':type==='idfront'?'canIDF':'canIDB');let prev=document.getElementById(type==='selfie'?'prevSelfie':type==='idfront'?'prevIDF':'prevIDB');let btn=document.getElementById(type==='selfie'?'capSelfie':type==='idfront'?'capIDF':'capIDB');can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext('2d').drawImage(vid,0,0);let tmp=document.createElement('canvas');tmp.width=500;tmp.height=500*can.height/can.width;tmp.getContext('2d').drawImage(can,0,0,tmp.width,tmp.height);photos[type]=tmp.toDataURL('image/jpeg',0.7);prev.src=photos[type];prev.style.display='block';vid.style.display='none';btn.style.display='none';if(streams[type])streams[type].getTracks().forEach(t=>t.stop());save();}
 function sendEmailCode(){let em=document.getElementById('dEmail').value.trim();if(!em.includes('@'))return alert('Enter email!');currentOTP=Math.floor(100000+Math.random()*900000).toString();verifiedEmail=em;save();document.getElementById('otpSection').style.display='block';document.getElementById('demoCode').innerText=currentOTP;alert('Code: '+currentOTP);}
 function verifyEmailCode(){if(document.getElementById('otpInput').value.trim()===currentOTP){emailVerified=true;save();document.getElementById('otpSection').style.display='none';document.getElementById('emailVerifiedMsg').style.display='block';document.getElementById('verifiedEmailShow').innerText=verifiedEmail;document.getElementById('dEmail').disabled=true;}else alert('Wrong! '+currentOTP);}
 function setMode(m){localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('adminView').style.display=m==='admin'?'block':'none';document.getElementById('bR').className=m==='rider'?'active r-on':'';document.getElementById('bD').className=m==='driver'?'active d-on':'';document.getElementById('bA').className=m==='admin'?'active a-on':'';checkReg();render();checkActiveRide();}
 function askAdmin(){if(prompt('PIN')==='4321')setMode('admin');}
 function redeem(){let c=document.getElementById('vCode').value;let m=c.match(/R(\d+)/);if(!m)return alert('Invalid');wallet+=parseInt(m[1]);document.getElementById('vCode').value='';save();}
-
-// RIDER SEES DRIVER LIVE PHOTO - SAFETY FEATURE!
+function getDriverRating(id){let r=ratings.filter(x=>x.toDriver===id);if(!r.length)return {avg:5.0,count:0,stars:'★★★★★'};let avg=r.reduce((s,x)=>s+x.stars,0)/r.length;return {avg:avg.toFixed(1),count:r.length,stars:'★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg))};}
 function requestRide(){
  let f=document.getElementById('from').value,t=document.getElementById('to').value;
  if(!f||!t)return alert('Enter From and To');
  let verified=drivers.filter(d=>d.status==='verified');
- if(verified.length===0)return alert('No verified women drivers yet! Go Admin and approve one first.');
- document.getElementById('rideStatus').innerHTML='✅ Found '+verified.length+' verified drivers near '+f+'!';
+ if(!verified.length)return alert('No verified drivers! Approve in Admin');
+ document.getElementById('rideStatus').innerHTML='✅ Found '+verified.length+' drivers!';
  document.getElementById('nearbyDrivers').style.display='block';
- let areaMatch=verified.filter(d=>d.area===f||f.toLowerCase().includes(d.area.toLowerCase())||d.area.toLowerCase().includes(f.toLowerCase()));
- let list=areaMatch.length>0?areaMatch:verified;
- document.getElementById('driverList').innerHTML=list.map(d=>`
+ let list=verified.sort((a,b)=>getDriverRating(b.id).avg-getDriverRating(a.id).avg);
+ // RIDER SEES ONLY STARS, NO COMMENTS!
+ document.getElementById('driverList').innerHTML=list.map(d=>{let rat=getDriverRating(d.id);return`
   <div class="rider-driver-card" onclick="selectDriver(${d.id})">
-   <img src="${d.selfie}" class="big-photo">
-   <div style="flex:1">
-    <b>${d.name}</b> <span class="badge b-verified">✅ LIVE Verified</span> <span class="badge b-live">AI ${d.aiScore||85}%</span><br>
-    <span class="small">🚗 ${d.car} • ${d.plate} • ${d.area}<br>📧 ${d.email} • ⭐ 5.0 • 🕒 2 min away<br><span style="color:#22c55e">Tap to view full profile & book →</span></span>
-   </div>
-   <div style="text-align:center"><span style="font-size:20px">👁️</span><br><span class="small">View</span></div>
-  </div>
- `).join('');
+   <img src="${d.selfie}" class="big-photo"><div style="flex:1"><b>${d.name}</b> <span class="badge b-verified">✅ LIVE</span><br><span class="stars" style="font-size:12px">${rat.stars}</span> <b>${rat.avg}</b> (${rat.count} trips)<br><span class="small">🚗 ${d.car} • ${d.plate} • ${d.area}<br><span style="color:#22c55e">Comments private 🔒 - Stars only</span></span></div><div>👁️</div>
+  </div>`}).join('');
 }
-function selectDriver(id){
- let d=drivers.find(x=>x.id===id);selectedDriver=d;
- document.getElementById('selectedDriverView').style.display='block';
- document.getElementById('bookFare').innerText=75+Math.floor(Math.random()*30);
- document.getElementById('selectedDriverInfo').innerHTML=`
-  <div style="text-align:center">
-   <img src="${d.selfie}" style="width:120px;height:120px;border-radius:50%;border:4px solid #22c55e">
-   <div style="margin-top:8px"><b style="font-size:18px">${d.name}</b> <span class="badge b-verified">✅ VERIFIED</span></div>
-   <div class="small">LIVE Photo taken ${d.time}</div>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
-   <div style="background:#0f172a;padding:6px;border-radius:6px"><span class="small">Car</span><br><b>${d.car}</b></div>
-   <div style="background:#0f172a;padding:6px;border-radius:6px"><span class="small">Plate</span><br><b style="color:#facc15">${d.plate}</b></div>
-   <div style="background:#0f172a;padding:6px;border-radius:6px"><span class="small">Area</span><br><b>${d.area}</b></div>
-   <div style="background:#0f172a;padding:6px;border-radius:6px"><span class="small">AI Match</span><br><b style="color:#22c55e">${d.aiScore||85}% Match ✅</b></div>
-  </div>
-  <div class="small" style="background:#0f172a;padding:6px;border-radius:6px">📞 ${d.phone} • 📧 ${d.email} • ID Verified • Email Verified</div>
-  <div style="margin:6px 0"><span class="small">ID Photos (Admin verified):</span><br><div style="display:flex;gap:4px"><img src="${d.selfie}" style="width:60px;height:60px;border-radius:6px;border:2px solid #22c55e"><img src="${d.idfront}" style="width:80px;height:50px;border-radius:6px"><img src="${d.idback}" style="width:80px;height:50px;border-radius:6px"></div></div>
- `;
- window.scrollTo(0,document.getElementById('selectedDriverView').offsetTop);
-}
+function selectDriver(id){let d=drivers.find(x=>x.id===id);selectedDriver=d;let rat=getDriverRating(d.id);document.getElementById('selectedDriverView').style.display='block';document.getElementById('bookFare').innerText=80;document.getElementById('selectedDriverInfo').innerHTML=`<div style="text-align:center"><img src="${d.selfie}" style="width:100px;height:100px;border-radius:50%;border:4px solid #22c55e"><div><b>${d.name}</b> <span class="badge b-verified">✅</span></div><div class="stars">${rat.stars}</div><div><b>${rat.avg}⭐ (${rat.count} trips)</b><br><span class="small" style="color:#facc15">🔒 Comments private to Admin</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:6px 0"><div style="background:#0f172a;padding:5px;border-radius:6px"><span class="small">Car</span><br><b>${d.car}</b></div><div style="background:#0f172a;padding:5px;border-radius:6px"><span class="small">Plate</span><br><b style="color:#facc15">${d.plate}</b></div></div>`;}
 function cancelSelection(){selectedDriver=null;document.getElementById('selectedDriverView').style.display='none';}
-function confirmBooking(){
- if(!selectedDriver)return;
- let fare=document.getElementById('bookFare').innerText;
- if(wallet<fare)return alert('Low wallet! Need R'+fare+' - Redeem voucher!');
- wallet-=parseFloat(fare);
- activeRideData={driver:selectedDriver,from:document.getElementById('from').value,to:document.getElementById('to').value,fare:fare,time:new Date().toLocaleString()};
- save();
- document.getElementById('selectedDriverView').style.display='none';
- document.getElementById('nearbyDrivers').style.display='none';
- document.getElementById('activeRide').style.display='block';
- document.getElementById('activeRideInfo').innerHTML=`
-  <div style="display:flex;gap:10px;align-items:center;margin:8px 0">
-   <img src="${selectedDriver.selfie}" style="width:70px;height:70px;border-radius:50%;border:3px solid #22c55e">
-   <div><b>${selectedDriver.name} is coming!</b><br><span class="small">${selectedDriver.car} • ${selectedDriver.plate}<br>📍 ${activeRideData.from} → ${activeRideData.to}<br>💰 R${fare} Paid</span></div>
-  </div>
-  <div class="safety"><b>Check before boarding:</b><br><span class="small">Face = photo above? Plate = ${selectedDriver.plate}?<br>Share this screen with family!</span></div>
- `;
- document.getElementById('rideStatus').innerHTML='🚗 Ride booked with '+selectedDriver.name+'!';
+function confirmBooking(){if(!selectedDriver)return;let fare=80;if(wallet<fare)return alert('Need R'+fare);wallet-=fare;activeRideData={driver:selectedDriver,driverId:selectedDriver.id,from:document.getElementById('from').value,to:document.getElementById('to').value,fare:fare,time:new Date().toLocaleString()};save();document.getElementById('selectedDriverView').style.display='none';document.getElementById('nearbyDrivers').style.display='none';document.getElementById('activeRide').style.display='block';document.getElementById('activeRideInfo').innerHTML=`<div style="display:flex;gap:10px"><img src="${selectedDriver.selfie}" style="width:60px;height:60px;border-radius:50%;border:3px solid #22c55e"><div><b>${selectedDriver.name} coming!</b><br><span class="small">${selectedDriver.car} ${selectedDriver.plate}<br>${activeRideData.from}→${activeRideData.to} R${fare}</span></div></div>`;}
+function checkActiveRide(){if(activeRideData){document.getElementById('activeRide').style.display='block';document.getElementById('activeRideInfo').innerHTML=`<div style="display:flex;gap:10px"><img src="${activeRideData.driver.selfie}" style="width:60px;height:60px;border-radius:50%"><div><b>${activeRideData.driver.name}</b><br><span class="small">${activeRideData.driver.car} ${activeRideData.driver.plate}<br>${activeRideData.from}→${activeRideData.to}</span></div></div>`;}}
+function completeRide(){if(!activeRideData)return;document.getElementById('ratePhoto').src=activeRideData.driver.selfie;document.getElementById('rateName').innerText=activeRideData.driver.name;document.getElementById('ratingModal').style.display='block';}
+function setStars(n){currentStars=n;document.querySelectorAll('.star-btn').forEach((b,i)=>{b.className=i<n?'star-btn active':'star-btn';});let texts=['','😡 Bad','😐 OK','🙂 Good','😊 Great','🤩 Excellent!'];document.getElementById('starText').innerText=texts[n]+' - '+n+' stars';}
+function submitRating(){
+ if(currentStars===0)return alert('Tap stars!');
+ let comment=document.getElementById('rateComment').value||'';
+ let trip={id:Date.now(),driverId:activeRideData.driverId,driverName:activeRideData.driver.name,driverSelfie:activeRideData.driver.selfie,from:activeRideData.from,to:activeRideData.to,fare:activeRideData.fare,time:activeRideData.time,rider:'me',stars:currentStars,comment:comment};
+ tripHistory.unshift(trip);
+ ratings.unshift({id:Date.now(),toDriver:activeRideData.driverId,fromRider:'me',stars:currentStars,comment:comment,time:new Date().toLocaleString(),private:true});
+ let d=drivers.find(x=>x.id===activeRideData.driverId);if(d){d.trips=(d.trips||0)+1;d.earnings=(d.earnings||0)+activeRideData.fare;}
+ activeRideData=null;currentStars=0;document.getElementById('rateComment').value='';document.getElementById('ratingModal').style.display='none';document.getElementById('activeRide').style.display='none';
+ save();render();alert('Thanks! Private comment sent to Admin 🔒 '+trip.stars+'⭐');
 }
-function checkActiveRide(){
- if(activeRideData){
-  document.getElementById('activeRide').style.display='block';
-  document.getElementById('activeRideInfo').innerHTML=`
-   <div style="display:flex;gap:10px"><img src="${activeRideData.driver.selfie}" style="width:60px;height:60px;border-radius:50%;border:3px solid #22c55e"><div><b>${activeRideData.driver.name}</b><br><span class="small">${activeRideData.driver.car} ${activeRideData.driver.plate}<br>${activeRideData.from}→${activeRideData.to} R${activeRideData.fare}</span></div></div>
-  `;
+function closeRating(){if(activeRideData){let trip={id:Date.now(),driverId:activeRideData.driverId,driverName:activeRideData.driver.name,driverSelfie:activeRideData.driver.selfie,from:activeRideData.from,to:activeRideData.to,fare:activeRideData.fare,time:activeRideData.time,rider:'me',stars:5,comment:'Auto 5 star'};tripHistory.unshift(trip);let d=drivers.find(x=>x.id===activeRideData.driverId);if(d){d.trips=(d.trips||0)+1;d.earnings=(d.earnings||0)+activeRideData.fare;}}activeRideData=null;document.getElementById('ratingModal').style.display='none';document.getElementById('activeRide').style.display='none';save();render();}
+function callDriver(){if(activeRideData)alert('Calling '+activeRideData.driver.name+'\n'+activeRideData.driver.phone);}
+function sos(){if(!activeRideData)return;let msg='🆘 AiRide SOS! Driver:'+activeRideData.driver.name+' Plate:'+activeRideData.driver.plate;alert(msg);}
+
+function showHistory(who){
+ if(who==='rider'){
+  document.getElementById('riderHistory').style.display='block';
+  let myTrips=tripHistory.filter(t=>t.rider==='me');
+  document.getElementById('rHistoryList').innerHTML=myTrips.length?myTrips.map(t=>`<div class="history-item"><img src="${t.driverSelfie}" style="width:40px;height:40px;border-radius:50%"><div style="flex:1"><b>${t.driverName}</b> ${'★'.repeat(t.stars)} ${t.stars}⭐<br><span class="small">${t.from}→${t.to} • R${t.fare} • ${t.time}<br>🔒 Your private comment: "${t.comment||'No comment'}"</span></div></div>`).join(''):'No trips yet';
+ }else{
+  document.getElementById('driverHistory').style.display='block';
+  let myTrips=tripHistory.filter(t=>t.driverId===curDriver?.id);
+  document.getElementById('dHistoryList').innerHTML=myTrips.length?myTrips.map(t=>`<div class="history-item"><div style="flex:1"><b>${t.from}→${t.to}</b> R${t.fare} ${'★'.repeat(t.stars)}<br><span class="small">${t.time}</span></div></div>`).join(''):'No trips yet';
+  let myRatings=ratings.filter(r=>r.toDriver===curDriver?.id);
+  document.getElementById('dRatingsList').innerHTML='<b>🔒 Private Ratings (Only You & Admin See - Riders DON’T see this):</b><br>'+(myRatings.length?myRatings.map(r=>`<div class="history-item private-box"><div>🔒 ${'★'.repeat(r.stars)} ${r.stars}⭐ - "${r.comment||'No comment'}"<br><span class="small">Private • ${r.time}</span></div></div>`).join(''):'No private ratings yet');
+  document.getElementById('dTotalEarned').innerText=myTrips.reduce((s,t)=>s+t.fare,0);
  }
 }
-function completeRide(){if(confirm('Complete ride?')){activeRideData=null;save();document.getElementById('activeRide').style.display='none';alert('Ride completed! Thank you!');}}
-function callDriver(){if(activeRideData)alert('Calling '+activeRideData.driver.name+'\n'+activeRideData.driver.phone+'\n\nIn real app: Opens phone dialer');}
-function sos(){if(!activeRideData)return;let msg='🆘 AiRide SOS!\nDriver: '+activeRideData.driver.name+'\nCar: '+activeRideData.driver.car+' '+activeRideData.driver.plate+'\nPlate: '+activeRideData.driver.plate+'\nFrom: '+activeRideData.from+' To: '+activeRideData.to+'\nPhoto verified AI '+activeRideData.driver.aiScore+'%\nTime: '+activeRideData.time+'\n\nI need help! Share location!';if(navigator.share){navigator.share({title:'SOS AiRide',text:msg});}else{alert(msg+'\n\nCopy this and send to family on WhatsApp!');}}
-
+function hideHistory(who){if(who==='rider')document.getElementById('riderHistory').style.display='none';else document.getElementById('driverHistory').style.display='none';}
 function checkReg(){if(curDriver){document.getElementById('regForm').style.display='none';document.getElementById('driverDash').style.display='block';document.getElementById('dNameShow').innerText=curDriver.name;document.getElementById('dInfoShow').innerText=curDriver.car+' • '+curDriver.plate;document.getElementById('dPhotoShow').src=curDriver.selfie;let b=document.getElementById('verBadge'),msg=document.getElementById('verMsg'),btn=document.getElementById('onlineBtn');if(curDriver.status==='pending'){b.innerHTML='<span class="badge b-pending">⏳ PENDING</span>';msg.innerHTML='⏳ Waiting Admin';btn.style.display='none';}else if(curDriver.status==='verified'){b.innerHTML='<span class="badge b-verified">✅ VERIFIED</span>';msg.innerHTML='✅ Approved!';btn.style.display='block';}else{b.innerHTML='<span class="badge b-pending" style="background:#ef4444;color:#fff">❌ REJECTED</span>';msg.innerHTML='❌ '+curDriver.rejectReason;btn.style.display='none';}}else{document.getElementById('regForm').style.display='block';document.getElementById('driverDash').style.display='none';if(emailVerified){document.getElementById('emailVerifiedMsg').style.display='block';document.getElementById('verifiedEmailShow').innerText=verifiedEmail;document.getElementById('dEmail').value=verifiedEmail;}if(photos.selfie)document.getElementById('prevSelfie').src=photos.selfie,document.getElementById('prevSelfie').style.display='block';if(photos.idfront)document.getElementById('prevIDF').src=photos.idfront,document.getElementById('prevIDF').style.display='block';if(photos.idback)document.getElementById('prevIDB').src=photos.idback,document.getElementById('prevIDB').style.display='block';}}
-function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!emailVerified)return document.getElementById('regMsg').innerText='❌ Verify email!';if(!photos.selfie||!photos.idfront||!photos.idback)return document.getElementById('regMsg').innerText='❌ Take 3 LIVE photos!';if(!n||!p||!id||!car||!pl||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm';let score=Math.floor(75+Math.random()*20);curDriver={id:Date.now(),name:n,phone:p,email:verifiedEmail,idNum:id,car:car,plate:pl,area:ar,selfie:photos.selfie,idfront:photos.idfront,idback:photos.idback,aiScore:score,aiMatched:true,status:'pending',time:new Date().toLocaleString()};drivers=drivers.filter(d=>d.phone!==p);drivers.unshift(curDriver);save();checkReg();alert('Submitted! AI '+score+'%');}
+function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!emailVerified)return document.getElementById('regMsg').innerText='❌ Verify email!';if(!photos.selfie||!photos.idfront||!photos.idback)return document.getElementById('regMsg').innerText='❌ Take 3 LIVE photos!';if(!n||!p||!id||!car||!pl||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm';let score=Math.floor(75+Math.random()*20);curDriver={id:Date.now(),name:n,phone:p,email:verifiedEmail,idNum:id,car:car,plate:pl,area:ar,selfie:photos.selfie,idfront:photos.idfront,idback:photos.idback,aiScore:score,aiMatched:true,status:'pending',time:new Date().toLocaleString(),trips:0,earnings:0,adminNotes:[]};drivers=drivers.filter(d=>d.phone!==p);drivers.unshift(curDriver);save();checkReg();alert('Submitted! AI '+score+'%');}
 function editDriver(){if(curDriver)photos={selfie:curDriver.selfie,idfront:curDriver.idfront,idback:curDriver.idback};curDriver=null;save();location.reload();}
 function toggleOnline(){let on=localStorage.getItem('online')==='true';localStorage.setItem('online',!on);let b=document.getElementById('onlineBtn');b.innerText=!on?'🔴 OFFLINE':'🟢 ONLINE';b.className=!on?'btn btn-red':'btn btn-green';render();}
-function render(){let d=document.getElementById('requests');if(d)d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:4px 0"><b>${r.from}→${r.to}</b> R${r.fare}<br><button class="btn btn-green" style="padding:5px" onclick="acceptRide(${r.id})">Accept</button></div>`).join(''):'No requests';let ap=document.getElementById('aPendingList'),av=document.getElementById('aVerifiedList');let pend=drivers.filter(x=>x.status==='pending');let veri=drivers.filter(x=>x.status==='verified');if(ap)ap.innerHTML=pend.length?pend.map(dr=>`<div class="driver-card"><img src="${dr.selfie}" style="width:50px;height:50px;border-radius:50%"><div style="flex:1"><b>${dr.name}</b> <span class="badge b-pending">AI ${dr.aiScore}%</span><br><span class="small">${dr.phone} • ${dr.car} ${dr.plate}</span><br><div style="display:flex;gap:3px;margin-top:3px"><img src="${dr.selfie}" style="width:40px;height:40px;border-radius:4px"><img src="${dr.idfront}" style="width:50px;height:40px;border-radius:4px"><img src="${dr.idback}" style="width:50px;height:40px;border-radius:4px"></div><div style="display:flex;gap:4px;margin-top:4px"><button class="btn btn-green" style="flex:1" onclick="verifyDriver(${dr.id})">✅ Approve</button><button class="btn btn-red" style="flex:1" onclick="rejectDriver(${dr.id})">❌ Reject</button></div></div></div>`).join(''):'No pending';if(av)av.innerHTML=veri.length?veri.map(dr=>`<div class="driver-card"><img src="${dr.selfie}" style="width:35px;height:35px;border-radius:50%"><div><b>${dr.name}</b> <span class="badge b-verified">AI ${dr.aiScore}%</span><br><span class="small">${dr.car} ${dr.plate} • ${dr.area}</span></div></div>`).join(''):'No verified';}
+function render(){
+ let d=document.getElementById('requests');
+ if(d)d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:4px 0"><b>${r.from}→${r.to}</b> R${r.fare}<br><button class="btn btn-green" style="padding:5px" onclick="acceptRide(${r.id})">Accept</button></div>`).join(''):'No requests';
+ let ap=document.getElementById('aPendingList'),av=document.getElementById('aVerifiedList'),at=document.getElementById('aTripsList');
+ let pend=drivers.filter(x=>x.status==='pending');
+ let veri=drivers.filter(x=>x.status==='verified');
+ if(ap)ap.innerHTML=pend.length?pend.map(dr=>`<div class="driver-card"><div style="display:flex;gap:8px"><img src="${dr.selfie}" style="width:50px;height:50px;border-radius:50%"><div style="flex:1"><b>${dr.name}</b> <span class="badge b-pending">AI ${dr.aiScore}%</span><br><span class="small">${dr.phone} • ${dr.car} ${dr.plate}</span></div></div><div style="display:flex;gap:3px;margin-top:3px"><img src="${dr.selfie}" style="width:40px;height:40px;border-radius:4px"><img src="${dr.idfront}" style="width:50px;height:40px;border-radius:4px"></div><div style="display:flex;gap:4px;margin-top:4px"><button class="btn btn-green" style="flex:1" onclick="verifyDriver(${dr.id})">✅ Approve</button><button class="btn btn-red" style="flex:1" onclick="rejectDriver(${dr.id})">❌ Reject</button></div></div>`).join(''):'No pending';
+ if(av)av.innerHTML=veri.length?veri.map(dr=>{
+  let rat=getDriverRating(dr.id);
+  let drRatings=ratings.filter(r=>r.toDriver===dr.id);
+  let commentsHtml=drRatings.length?`<div class="private-box"><b>🔒 PRIVATE Rider Comments (Only Admin + Driver see - Riders DON'T see others):</b><br>${drRatings.map(r=>`<div class="small" style="margin:2px 0;padding:4px;background:#0f172a;border-radius:4px;border-left:2px solid #facc15">⭐${r.stars} - "${r.comment||'No comment'}" • ${r.time}</div>`).join('')}</div>`:'<div class="small">No private rider comments yet</div>';
+  return `<div class="driver-card"><div style="display:flex;gap:8px"><img src="${dr.selfie}" style="width:40px;height:40px;border-radius:50%"><div style="flex:1"><b>${dr.name}</b> <span class="badge b-verified">${rat.avg}⭐ (${rat.count})</span> R${dr.earnings||0}<br><span class="small">${dr.car} ${dr.plate} • ${dr.area} • ${dr.trips||0} trips</span></div></div>${commentsHtml}<div style="display:flex;gap:4px;margin-top:5px"><input id="adminNote-${dr.id}" placeholder="Add private admin note..." style="flex:1;padding:6px;font-size:11px"><button class="btn btn-blue" style="width:70px;padding:6px" onclick="addAdminNote(${dr.id})">Add Note</button></div><div id="adminNotes-${dr.id}" class="small" style="margin-top:4px">${(dr.adminNotes||[]).map(n=>`<div style="background:#2e1a1a;padding:4px;margin:2px 0;border-radius:4px">📝 Admin Note: ${n.text} • ${n.time}</div>`).join('')}</div></div>`;
+ }).join(''):'No verified';
+ if(at)at.innerHTML=tripHistory.length?tripHistory.slice(0,20).map(t=>`<div class="history-item"><img src="${t.driverSelfie}" style="width:30px;height:30px;border-radius:50%"><div style="flex:1"><b>${t.driverName}</b> ${t.from}→${t.to} R${t.fare} ${'★'.repeat(t.stars)}<br><span class="small">${t.time}<br>🔒 Private comment: "${t.comment||''}"</span></div></div>`).join(''):'No trips yet';
+}
 function verifyDriver(id){let dr=drivers.find(x=>x.id===id);dr.status='verified';if(curDriver&&curDriver.id===id)curDriver.status='verified';save();render();checkReg();}
 function rejectDriver(id){let rs=prompt('Reason?');if(!rs)return;let dr=drivers.find(x=>x.id===id);dr.status='rejected';dr.rejectReason=rs;if(curDriver&&curDriver.id===id){curDriver.status='rejected';curDriver.rejectReason=rs;}save();render();checkReg();}
-function acceptRide(id){let r=rides.find(x=>x.id===id);if(!r)return;alert('Ride accepted! Call rider. Rider will see your LIVE photo!');rides=rides.filter(x=>x.id!==id);save();render();}
-function clearAll(){if(confirm('RESET?')){localStorage.clear();location.reload();}}
+function acceptRide(id){let r=rides.find(x=>x.id===id);if(!r)return;alert('Accepted!');rides=rides.filter(x=>x.id!==id);save();render();}
+function addAdminNote(driverId){let input=document.getElementById('adminNote-'+driverId);let text=input.value.trim();if(!text)return alert('Enter note!');let dr=drivers.find(x=>x.id===driverId);if(!dr.adminNotes)dr.adminNotes=[];dr.adminNotes.unshift({text:text,time:new Date().toLocaleString()});input.value='';save();render();alert('Private admin note added - Only admin sees!');}
+function clearAll(){if(confirm('RESET ALL?')){localStorage.clear();location.reload();}}
 upd();setMode(localStorage.getItem('mode')||'rider');render();checkReg();checkActiveRide();
 </script>
 </body>
