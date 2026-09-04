@@ -2,216 +2,109 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AiRide SAFE - Durban</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>AiRide SAFE - Driver + Rider</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{background:#0f172a;color:#fff;min-height:100vh;padding:12px}
+body{background:#0f172a;color:#fff;padding:12px}
 .card{background:#1e293b;border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #334155}
-h1{font-size:22px;text-align:center;color:#38bdf8}
-h2{font-size:16px;color:#94a3b8;margin-bottom:10px}
-.btn{width:100%;padding:14px;border:none;border-radius:12px;font-weight:700;font-size:15px;margin:6px 0;cursor:pointer}
-.btn-blue{background:#0ea5e9;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.toggle{display:flex;background:#0f172a;border-radius:30px;padding:4px;border:1px solid #334155}
+.toggle button{padding:10px 20px;border-radius:25px;border:none;font-weight:bold;cursor:pointer}
+.active-rider{background:#0ea5e9;color:#fff}
+.active-driver{background:#22c55e;color:#000}
+.wallet{font-size:42px;color:#22c55e;text-align:center;font-weight:900}
+input{width:100%;padding:14px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;margin:8px 0;font-size:16px}
+.btn{width:100%;padding:16px;border-radius:12px;border:none;font-weight:900;font-size:17px;cursor:pointer;margin-top:8px}
 .btn-green{background:#22c55e;color:#000}
-.btn-red{background:#ef4444;color:#fff;animation:pulse 1.5s infinite}
+.btn-blue{background:#0ea5e9;color:#fff}
 .btn-dark{background:#334155;color:#fff}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#fff;margin:6px 0}
-.wallet{font-size:32px;font-weight:900;color:#22c55e;text-align:center}
-.sos-hold{background:#450a0a;border:2px solid #ef4444}
-.shield{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tag{font-size:11px;padding:4px 8px;background:#0ea5e9;border-radius:20px;display:inline-block;margin:2px}
-.log{font-size:11px;color:#94a3b8;max-height:100px;overflow:auto;background:#0f172a;padding:8px;border-radius:8px}
+.sos{background:#7f1d1d;border:2px solid #ef4444}
+.ride-item{background:#0f172a;padding:12px;border-radius:12px;margin:8px 0;border-left:4px solid #22c55e}
+.small{opacity:.7;font-size:13px}
 </style>
 </head>
 <body>
 
 <div class="card">
-<h1>🚗 AiRide SAFE 🛡️</h1>
-<p style="text-align:center;font-size:12px;color:#94a3b8">Durban • Women & Kids First • Wallet + SOS</p>
+<div class="top">
+<div><b style="font-size:22px">🚗 AiRide SAFE 🛡️</b><br><span class="small">Durban • Women & Kids First</span></div>
+<div class="toggle">
+<button id="btnRider" class="active-rider" onclick="setMode('rider')">Rider</button>
+<button id="btnDriver" onclick="setMode('driver')">Driver</button>
+</div>
+</div>
 </div>
 
+<!-- RIDER VIEW -->
+<div id="riderView">
 <div class="card">
-<h2>💰 Wallet & Voucher</h2>
+<div>💰 <b>Wallet & Voucher</b></div>
 <div class="wallet" id="wallet">R 0.00</div>
-<p style="text-align:center;font-size:12px" id="walletStatus">No balance</p>
-<input id="voucherInput" placeholder="Paste voucher code e.g. AIRIDE-R100-XXXX">
-<button class="btn btn-green" onclick="redeemVoucher()">✅ Redeem Voucher</button>
-<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
-<button class="btn btn-dark" style="padding:8px;font-size:12px" onclick="genVoucher(50)">Gen R50</button>
-<button class="btn btn-dark" style="padding:8px;font-size:12px" onclick="genVoucher(100)">Gen R100</button>
-<button class="btn btn-dark" style="padding:8px;font-size:12px" onclick="genVoucher(200)">Gen R200</button>
+<div id="walletMsg" class="small" style="text-align:center">No balance - Redeem voucher</div>
+<input id="vCode" placeholder="Paste voucher code e.g. AIRIDE-R100-XXXX">
+<button class="btn btn-green" onclick="redeem()">✅ Redeem Voucher</button>
+<div style="display:flex;gap:8px;margin-top:10px">
+<button class="btn btn-dark" style="flex:1" onclick="gen(50)">Gen R50</button>
+<button class="btn btn-dark" style="flex:1" onclick="gen(100)">Gen R100</button>
+<button class="btn btn-dark" style="flex:1" onclick="gen(200)">Gen R200</button>
 </div>
-<div class="log" id="voucherLog">Voucher log...</div>
+<div id="vLog" class="small" style="margin-top:10px;background:#0f172a;padding:8px;border-radius:8px">Voucher log...</div>
 </div>
 
 <div class="card">
-<h2>🚖 Request Safe Ride</h2>
+<div>🚕 <b>Request Safe Ride</b></div>
 <input id="from" placeholder="From: e.g. Umlazi">
 <input id="to" placeholder="To: e.g. Durban Central">
 <button class="btn btn-blue" onclick="requestRide()">🔍 Find Woman Driver Near Me</button>
-<div id="rideStatus" style="font-size:12px;color:#38bdf8;text-align:center;margin-top:6px"></div>
+<div id="rideStatus" class="small" style="margin-top:10px"></div>
+</div>
 </div>
 
-<div class="card sos-hold">
-<h2>🆘 SOS EMERGENCY — Hold 3 Sec</h2>
-<p style="font-size:11px;text-align:center">Hold button 3 seconds → Sends location + WhatsApp to emergency contacts</p>
-<button class="btn btn-red" id="sosBtn" onmousedown="startSOS()" onmouseup="cancelSOS()" ontouchstart="startSOS()" ontouchend="cancelSOS()">🚨 HOLD FOR SOS (3s)</button>
-<div id="sosStatus" style="text-align:center;font-size:12px;margin-top:6px"></div>
-<p style="font-size:10px;color:#fca5a5;margin-top:6px">Emergency WhatsApp: <span id="emContact">+27 82 XXX XXXX</span> (edit below)</p>
-<input id="emPhone" placeholder="Your emergency contact WhatsApp number e.g. 27821234567">
-<button class="btn btn-dark" style="padding:8px;font-size:11px" onclick="saveEm()">Save Emergency Contact</button>
+<!-- DRIVER VIEW -->
+<div id="driverView" style="display:none">
+<div class="card">
+<div>👩‍✈️ <b>Driver Dashboard</b></div>
+<div class="wallet" id="dWallet">R 0.00</div>
+<div class="small" style="text-align:center">Today's Earnings</div>
+<button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()">🟢 Go ONLINE - Ready for Rides</button>
+<div id="dStatus" class="small" style="margin-top:8px;text-align:center">You are OFFLINE</div>
 </div>
 
 <div class="card">
-<h2>🛡️ Safety Shield</h2>
-<div class="shield">
-<div>✅ Woman Driver Verified</div>
-<div>✅ Live GPS Tracking</div>
-<div>✅ SOS 3-sec Hold</div>
-<div>✅ Night Shield 18h-6h</div>
-<div>✅ Share Trip WhatsApp</div>
-<div>✅ No Cash (Wallet)</div>
-</div>
-<div style="margin-top:10px">
-<button class="btn btn-dark" style="padding:10px" onclick="shareTrip()">📤 Share Live Trip to WhatsApp</button>
-<button class="btn btn-dark" style="padding:10px" onclick="toggleNight()">🌙 Toggle Night Shield (Women Only)</button>
+<div>📋 <b>Live Ride Requests</b> <span id="reqCount" style="background:#22c55e;color:#000;padding:2px 8px;border-radius:20px;font-size:12px">0</span></div>
+<div id="requests">No requests yet. Go ONLINE to receive.</div>
+<button class="btn btn-dark" onclick="clearRides()">Clear All</button>
 </div>
 </div>
 
-<div class="card">
-<h2>📊 Driver Mode (For Your 300 Drivers)</h2>
-<input id="driverName" placeholder="Driver Name">
-<input id="driverCar" placeholder="Car e.g. Toyota Corolla - ND 12345">
-<button class="btn btn-blue" onclick="registerDriver()">Register as AiRide Woman Driver</button>
-<div class="log" id="driverLog"></div>
+<div class="card sos">
+<div>🆘 <b>SOS EMERGENCY — Hold 3 Sec</b></div>
+<button id="sosBtn" style="width:100%;padding:20px;background:#ef4444;border:none;border-radius:12px;font-weight:900;font-size:18px;margin-top:8px;color:#fff" onmousedown="startSOS()" ontouchstart="startSOS()" onmouseup="stopSOS()" ontouchend="stopSOS()">HOLD FOR HELP</button>
+<div class="small">Shares live location to WhatsApp emergency</div>
 </div>
 
 <script>
-let wallet = parseFloat(localStorage.getItem('airide_wallet')||'0');
-let vouchers = JSON.parse(localStorage.getItem('airide_vouchers')||'[]');
-let emPhoneStore = localStorage.getItem('airide_em')||'';
-let sosTimer=null;
-let sosCount=0;
-
-function updateWallet(){
-document.getElementById('wallet').innerText='R '+wallet.toFixed(2);
-document.getElementById('walletStatus').innerText=wallet>0?'✅ Ready to ride':'No balance - Redeem voucher';
-localStorage.setItem('airide_wallet',wallet);
-if(emPhoneStore) document.getElementById('emContact').innerText='+'+emPhoneStore;
-}
-updateWallet();
-if(emPhoneStore) document.getElementById('emPhone').value=emPhoneStore;
-
-function genVoucher(amt){
-let code='AIRIDE-R'+amt+'-'+Math.random().toString(36).substr(2,6).toUpperCase()+'-'+Date.now().toString().slice(-4);
-vouchers.push({code,amt,used:false});
-localStorage.setItem('airide_vouchers',JSON.stringify(vouchers));
-document.getElementById('voucherLog').innerHTML+=`<div>🎟️ ${code} - R${amt} <button onclick="copyText('${code}')" style="background:#0ea5e9;border:none;border-radius:6px;padding:2px 6px;font-size:10px">Copy</button></div>`;
-copyText(code);
-alert('Voucher R'+amt+' generated & copied:\n'+code+'\n\nPaste in top box to redeem!');
-}
-
-function redeemVoucher(){
-let inp=document.getElementById('voucherInput').value.trim().toUpperCase();
-if(!inp) return alert('Paste voucher code');
-let f=vouchers.find(v=>v.code===inp);
-if(!f) {
- // allow any code starting AIRIDE- for demo
- if(inp.startsWith('AIRIDE-')){
-   let amt=parseInt(inp.split('-')[1].replace('R',''))||50;
-   wallet+=amt;
-   updateWallet();
-   document.getElementById('voucherInput').value='';
-   return alert('✅ R'+amt+' added! Wallet: R'+wallet);
- }
- return alert('Invalid voucher');
-}
-if(f.used) return alert('Already used');
-f.used=true;
-wallet+=f.amt;
-localStorage.setItem('airide_vouchers',JSON.stringify(vouchers));
-updateWallet();
-document.getElementById('voucherInput').value='';
-alert('✅ R'+f.amt+' added! Wallet now R'+wallet);
-}
-
-function copyText(t){navigator.clipboard.writeText(t);}
-
-function requestRide(){
-let from=document.getElementById('from').value||'Current Location';
-let to=document.getElementById('to').value||'Destination';
-if(wallet<20) return alert('Wallet low! Redeem R50+ voucher first');
-document.getElementById('rideStatus').innerText='🔍 Searching woman drivers near '+from+'...';
-setTimeout(()=>{
-document.getElementById('rideStatus').innerHTML=`✅ Driver Found!<br>👩 Nandi - Toyota Starlet - 2 min away<br>💰 Trip: R35 (from wallet)<br><button onclick="confirmRide()" style="margin-top:6px;background:#22c55e;border:none;padding:8px 12px;border-radius:8px;font-weight:700">Confirm Ride - Pay from Wallet</button>`;
-},1500);
-}
-function confirmRide(){
-if(wallet<35) return alert('Low balance');
-wallet-=35;
-updateWallet();
-document.getElementById('rideStatus').innerText='🚗 Ride confirmed! Driver on way. Shared to SOS contact. R35 deducted.';
-shareTrip();
-}
-
-function startSOS(){
-sosCount=0;
-document.getElementById('sosStatus').innerText='⏳ Holding... 0/3 sec';
-sosTimer=setInterval(()=>{
-sosCount++;
-document.getElementById('sosStatus').innerText=`⏳ Holding... ${sosCount}/3 sec - KEEP HOLDING!`;
-if(sosCount>=3){
-clearInterval(sosTimer);
-triggerSOS();
-}
-},1000);
-}
-function cancelSOS(){
-clearInterval(sosTimer);
-if(sosCount<3) document.getElementById('sosStatus').innerText='❌ Released early - Hold full 3 sec for SOS';
-}
-function triggerSOS(){
-document.getElementById('sosStatus').innerText='🚨 SOS SENT!';
-let phone=emPhoneStore||'27821234567';
-let msg=`🚨 AiRide SOS! I NEED HELP!\n📍 Location: https://maps.google.com/?q=-29.8587,31.0218\n🚗 Trip: ${document.getElementById('from').value||'Unknown'} to ${document.getElementById('to').value||'Unknown'}\n⏰ Time: ${new Date().toLocaleString()}\nSend help!`;
-let url=`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-window.open(url,'_blank');
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(p=>{
-let m2=`🚨 SOS UPDATE with LIVE GPS:\nhttps://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`;
-window.open(`https://wa.me/${phone}?text=${encodeURIComponent(m2)}`,'_blank');
-});
-}
-alert('🆘 SOS SENT to +'+phone+' with location!');
-}
-
-function saveEm(){
-let p=document.getElementById('emPhone').value.replace(/\D/g,'');
-if(p.length<10) return alert('Enter full number e.g. 27821234567');
-localStorage.setItem('airide_em',p);
-emPhoneStore=p;
-document.getElementById('emContact').innerText='+'+p;
-alert('Emergency contact saved: +'+p);
-}
-
-function shareTrip(){
-let phone=emPhoneStore||'27821234567';
-let msg=`🛡️ AiRide SAFE Trip Shared:\nFrom: ${document.getElementById('from').value||'Current'}\nTo: ${document.getElementById('to').value||'Dest'}\nDriver: Nandi - ND12345\nTrack: https://maps.google.com/?q=-29.8587,31.0218\nWallet: R${wallet}\nI'm on AiRide women-safe ride.`;
-window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
-}
-function toggleNight(){
-alert('🌙 Night Shield ON: 18:00-06:00 only Women Drivers + Auto SOS share + No male passengers');
-}
-function registerDriver(){
-let n=document.getElementById('driverName').value;
-let c=document.getElementById('driverCar').value;
-if(!n||!c) return alert('Enter name & car');
-document.getElementById('driverLog').innerHTML+=`<div>👩 ${n} - ${c} - ✅ Verified Woman Driver</div>`;
-alert('Driver '+n+' registered! Now visible to riders.');
-document.getElementById('driverName').value='';
-document.getElementById('driverCar').value='';
-}
+let wallet = parseFloat(localStorage.getItem('wallet')||0);
+let dWallet = parseFloat(localStorage.getItem('dWallet')||0);
+let isOnline = localStorage.getItem('online')==='true';
+let rides = JSON.parse(localStorage.getItem('rides')||'[]');
+let mode = localStorage.getItem('mode')||'rider';
+function updateW(){document.getElementById('wallet').innerText='R '+wallet.toFixed(2);document.getElementById('dWallet').innerText='R '+dWallet.toFixed(2);localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);}
+updateW();
+function setMode(m){mode=m;localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('btnRider').className=m==='rider'?'active-rider':'';document.getElementById('btnDriver').className=m==='driver'?'active-driver':'';if(m==='driver')renderRides();}
+setMode(mode);
+if(isOnline)toggleOnline(true);
+function gen(amt){let code='AIRIDE-R'+amt+'-'+Math.random().toString(36).substring(2,6).toUpperCase()+'-'+Date.now().toString().slice(-4);navigator.clipboard.writeText(code);document.getElementById('vCode').value=code;document.getElementById('vLog').innerHTML='✅ Copied: '+code+'<br>'+document.getElementById('vLog').innerHTML;alert('Voucher copied: '+code);}
+function redeem(){let c=document.getElementById('vCode').value.trim();if(!c)return alert('Paste code');let m=c.match(/R(\d+)/);if(!m)return alert('Invalid code');let amt=parseInt(m[1]);wallet+=amt;updateW();document.getElementById('walletMsg').innerText='✅ R'+amt+' added!';document.getElementById('vLog').innerHTML='✅ Redeemed R'+amt+' - '+c+'<br>'+document.getElementById('vLog').innerHTML;document.getElementById('vCode').value='';}
+function requestRide(){let f=document.getElementById('from').value,to=document.getElementById('to').value;if(!f||!to)return alert('Enter From & To');if(wallet<20)return alert('Low balance! Redeem voucher first (R50 min)');let ride={id:Date.now(),from:f,to:to,time:new Date().toLocaleTimeString(),fare:Math.floor(40+Math.random()*80)};rides.unshift(ride);localStorage.setItem('rides',JSON.stringify(rides));document.getElementById('rideStatus').innerHTML='✅ Request sent! Fare ~ R'+ride.fare+'<br>Searching women drivers near '+f+'...';setTimeout(()=>{document.getElementById('rideStatus').innerHTML+='<br>🚗 <b>Noma (4.9★) - 2 min away - Quantum White</b><br>WhatsApp her?';},1500);if(isOnline)renderRides();}
+function toggleOnline(init){if(!init)isOnline=!isOnline;localStorage.setItem('online',isOnline);let b=document.getElementById('onlineBtn');if(isOnline){b.innerText='🔴 Go OFFLINE';b.style.background='#ef4444';b.style.color='#fff';document.getElementById('dStatus').innerText='🟢 You are ONLINE - Waiting for rides';}else{b.innerText='🟢 Go ONLINE - Ready for Rides';b.style.background='#22c55e';b.style.color='#000';document.getElementById('dStatus').innerText='You are OFFLINE';}renderRides();}
+function renderRides(){let div=document.getElementById('requests');document.getElementById('reqCount').innerText=rides.length;if(rides.length===0){div.innerHTML='No requests. Share link with riders!';return;}div.innerHTML=rides.map(r=>`<div class="ride-item"><b>${r.from} → ${r.to}</b><br><span class="small">${r.time} • Fare R${r.fare}</span><br><button class="btn btn-green" style="padding:10px;margin-top:6px" onclick="acceptRide(${r.id})">✅ Accept - R${r.fare}</button></div>`).join('');}
+function acceptRide(id){let r=rides.find(x=>x.id===id);if(!r)return;if(!confirm('Accept ride '+r.from+' → '+r.to+' for R'+r.fare+'?'))return;dWallet+=r.fare;updateW();rides=rides.filter(x=>x.id!==id);localStorage.setItem('rides',JSON.stringify(rides));renderRides();alert('Ride accepted! Call rider. R'+r.fare+' added to earnings');}
+function clearRides(){if(confirm('Clear all requests?')){rides=[];localStorage.setItem('rides','[]');renderRides();}}
+let sosTimer;function startSOS(){sosTimer=setTimeout(()=>{let msg=encodeURIComponent('🆘 AiRide SOS! I need help! My location: https://maps.google.com/?q='+ '-29.8587,31.0218');window.open('https://wa.me/?text='+msg,'_blank');navigator.vibrate&&navigator.vibrate([500,200,500]);},3000);document.getElementById('sosBtn').innerText='HOLDING... 3s';}
+function stopSOS(){clearTimeout(sosTimer);document.getElementById('sosBtn').innerText='HOLD FOR HELP';}
+renderRides();
 </script>
 </body>
 </html>
