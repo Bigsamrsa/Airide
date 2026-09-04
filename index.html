@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AiRide SAFE - Verified Drivers</title>
+<title>AiRide SAFE - Full KYC</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#0f172a;color:#fff;padding:12px}
@@ -13,17 +13,21 @@ body{background:#0f172a;color:#fff;padding:12px}
 .active{color:#fff}.r-on{background:#0ea5e9}.d-on{background:#22c55e;color:#000}.a-on{background:#a855f7}
 .wallet{font-size:28px;color:#22c55e;text-align:center;font-weight:900}
 input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff;margin:4px 0}
-.btn{width:100%;padding:11px;border-radius:8px;border:none;font-weight:900;cursor:pointer;margin-top:5px;font-size:13px}
-.btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-purple{background:#a855f7;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-gold{background:#facc15;color:#000}
-.photo{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #22c55e;display:block;margin:8px auto}
+.btn{width:100%;padding:11px;border-radius:8px;border:none;font-weight:900;cursor:pointer;margin-top:5px;font-size:12px}
+.btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-red{background:#ef4444;color:#fff}
+.photo{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #22c55e;display:block;margin:6px auto}
+.idphoto{width:100%;height:110px;object-fit:cover;border-radius:10px;border:2px solid #334155;display:block;margin:5px 0}
+.upload-box{background:#0f172a;border:2px dashed #334155;border-radius:12px;padding:10px;text-align:center;margin:6px 0}
+.upload-box.ok{border-color:#22c55e;background:#1a2e1a}
 .badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:900}
 .b-pending{background:#facc15;color:#000}.b-verified{background:#22c55e;color:#000}.b-rejected{background:#ef4444;color:#fff}
-.driver-card{background:#0f172a;padding:10px;border-radius:10px;margin:6px 0;display:flex;gap:10px}
+.driver-card{background:#0f172a;padding:10px;border-radius:10px;margin:8px 0}
+.kyc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
 .small{opacity:.7;font-size:11px}
 </style>
 </head>
 <body>
-<div class="card" style="text-align:center"><b>🚗 AiRide SAFE 🛡️</b><br><span class="small">Verified Women Drivers Only</span></div>
+<div class="card" style="text-align:center"><b>🚗 AiRide SAFE 🛡️</b><br><span class="small">Full KYC - Selfie + ID Front/Back</span></div>
 <div class="toggle">
 <button id="bR" onclick="setMode('rider')">Rider</button>
 <button id="bD" onclick="setMode('driver')">Driver</button>
@@ -31,21 +35,26 @@ input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;
 </div>
 
 <div id="riderView">
-<div class="card">💰 Wallet<div class="wallet" id="wallet">R0</div><input id="vCode" placeholder="Voucher"><button class="btn btn-green" onclick="redeem()">Redeem</button><div style="display:flex;gap:5px"><button class="btn btn-dark" style="flex:1" onclick="gen(50)">R50</button><button class="btn btn-dark" style="flex:1" onclick="gen(100)">R100</button><button class="btn btn-dark" style="flex:1" onclick="gen(200)">R200</button></div></div>
+<div class="card">💰 Wallet<div class="wallet" id="wallet">R0</div><input id="vCode" placeholder="Voucher"><button class="btn btn-green" onclick="redeem()">Redeem</button></div>
 <div class="card">🚕 Request<input id="from" placeholder="From"><input id="to" placeholder="To"><button class="btn btn-blue" onclick="requestRide()">Find Verified Driver</button><div id="rideStatus" class="small"></div></div>
 </div>
 
 <div id="driverView" style="display:none">
 <div id="regForm" class="card" style="border:2px solid #22c55e">
-<b>👩‍✈️ Driver Verification Registration</b><br><span class="small">Photo + ID will be checked by Admin</span>
-<img id="preview" class="photo" style="display:none">
-<input type="file" id="photoInput" accept="image/*" onchange="loadPhoto(event)"><span class="small">📸 Upload Clear Selfie *</span>
-<input id="dName" placeholder="Full Name *"><input id="dPhone" placeholder="WhatsApp *"><input id="dID" placeholder="ID Number *">
-<select id="dCar"><option value="">Car Type *</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other</option></select>
+<b>👩‍✈️ FULL KYC VERIFICATION</b><br><span class="small">All 3 photos required</span>
+
+<div id="boxSelfie" class="upload-box"><span>🤳 Selfie Photo *</span><img id="prevSelfie" class="photo" style="display:none"><input type="file" accept="image/*" capture="user" onchange="loadP(event,'selfie')"></div>
+<div id="boxIDF" class="upload-box"><span>🪪 ID Front *</span><img id="prevIDF" class="idphoto" style="display:none"><input type="file" accept="image/*" onchange="loadP(event,'idfront')"></div>
+<div id="boxIDB" class="upload-box"><span>🪪 ID Back *</span><img id="prevIDB" class="idphoto" style="display:none"><input type="file" accept="image/*" onchange="loadP(event,'idback')"></div>
+
+<input id="dName" placeholder="Full Name (as on ID) *"><input id="dPhone" placeholder="WhatsApp *"><input id="dID" placeholder="ID Number *">
+<select id="dCar"><option value="">Car Type *</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other Sedan</option></select>
 <input id="dPlate" placeholder="Plate *"><input id="dLic" placeholder="License No *">
-<select id="dArea"><option value="">Area *</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option></select>
-<label class="small"><input type="checkbox" id="dWoman"> I confirm woman driver, valid license, car roadworthy</label>
-<button class="btn btn-green" onclick="registerDriver()">📤 SUBMIT FOR VERIFICATION</button><div id="regMsg" style="color:#ef4444" class="small"></div>
+<select id="dArea"><option value="">Area *</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option><option>Phoenix</option></select>
+<label class="small"><input type="checkbox" id="dWoman"> I confirm woman driver, all docs real</label>
+<button class="btn btn-green" onclick="registerDriver()">📤 SUBMIT FOR VERIFICATION</button>
+<div id="regMsg" class="small" style="color:#ef4444"></div>
+<div class="small" style="margin-top:6px">Progress: <span id="kycProg">0/3 photos</span></div>
 </div>
 
 <div id="driverDash" style="display:none">
@@ -53,21 +62,21 @@ input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;
 <img id="dPhotoShow" class="photo"><div id="verBadge"></div>
 <b id="dNameShow"></b><br><span class="small" id="dInfoShow"></span><div class="wallet" id="dWallet">R0</div>
 <div id="verMsg" class="card" style="background:#0f172a"></div>
+<div class="kyc-grid"><div><span class="small">Selfie</span><img id="dSelfie" class="photo" style="width:70px;height:70px"></div><div><span class="small">ID Front</span><img id="dIDF" class="idphoto" style="height:70px"></div><div><span class="small">ID Back</span><img id="dIDB" class="idphoto" style="height:70px"></div></div>
 <button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()" style="display:none">🟢 Go ONLINE</button>
-<div id="dStatus" class="small">Checking verification...</div>
-<button class="btn btn-dark" onclick="editDriver()">Edit / Resubmit</button>
+<div id="dStatus" class="small"></div>
+<button class="btn btn-dark" onclick="editDriver()">Edit / Resubmit KYC</button>
 </div>
 <div class="card">📋 Requests <span id="reqCount" style="background:#22c55e;color:#000;padding:2px 8px;border-radius:20px">0</span><div id="requests"></div></div>
 </div>
 </div>
 
 <div id="adminView" style="display:none">
-<div class="card" style="border:2px solid #a855f7">👑 ADMIN VERIFICATION PANEL
-<div style="display:flex;gap:6px;text-align:center;margin-top:8px"><div style="flex:1;background:#0f172a;padding:6px;border-radius:8px"><b id="aDrivers">0</b><br><span class="small">Total</span></div><div style="flex:1;background:#1a2e1a;padding:6px;border-radius:8px"><b id="aVerified" style="color:#22c55e">0</b><br><span class="small">Verified</span></div><div style="flex:1;background:#2e2a1a;padding:6px;border-radius:8px"><b id="aPending" style="color:#facc15">0</b><br><span class="small">Pending</span></div></div>
+<div class="card" style="border:2px solid #a855f7">👑 ADMIN KYC VERIFICATION
+<div style="display:flex;gap:6px;text-align:center;margin-top:6px"><div style="flex:1;background:#0f172a;padding:6px;border-radius:8px"><b id="aDrivers">0</b><br><span class="small">Total</span></div><div style="flex:1;background:#1a2e1a;padding:6px;border-radius:8px"><b id="aVerified" style="color:#22c55e">0</b><br><span class="small">Verified</span></div><div style="flex:1;background:#2e2a1a;padding:6px;border-radius:8px"><b id="aPending" style="color:#facc15">0</b><br><span class="small">Pending</span></div></div>
 </div>
-<div class="card"><b>🔍 Pending Verification</b><div id="aPendingList"></div></div>
-<div class="card"><b>✅ Verified Drivers</b><div id="aVerifiedList"></div></div>
-<div class="card"><b>📋 Rides</b><div id="aList" class="small"></div><button class="btn btn-red" onclick="clearAll()">RESET ALL</button></div>
+<div class="card"><b>🔍 Pending KYC (Check 3 Photos)</b><div id="aPendingList"></div></div>
+<div class="card"><b>✅ Verified</b><div id="aVerifiedList"></div></div>
 </div>
 
 <script>
@@ -77,25 +86,22 @@ let rides=JSON.parse(localStorage.getItem('rides')||'[]');
 let drivers=JSON.parse(localStorage.getItem('drivers')||'[]');
 let curDriver=JSON.parse(localStorage.getItem('curDriver')||'null');
 let isOnline=localStorage.getItem('online')==='true';
-let photoData=localStorage.getItem('tempPhoto')||'';
-function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('online',isOnline);localStorage.setItem('tempPhoto',photoData);upd();}
-function upd(){document.getElementById('wallet').innerText='R'+wallet.toFixed(2);document.getElementById('dWallet').innerText='R'+dWallet.toFixed(2);document.getElementById('aDrivers').innerText=drivers.length;document.getElementById('aVerified').innerText=drivers.filter(d=>d.status==='verified').length;document.getElementById('aPending').innerText=drivers.filter(d=>d.status==='pending').length;document.getElementById('reqCount').innerText=rides.length;}
-function loadPhoto(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(){photoData=r.result;document.getElementById('preview').src=photoData;document.getElementById('preview').style.display='block';save();};r.readAsDataURL(f);}
+let photos=JSON.parse(localStorage.getItem('photos')||'{"selfie":"","idfront":"","idback":""}');
+function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('online',isOnline);localStorage.setItem('photos',JSON.stringify(photos));upd();}
+function upd(){document.getElementById('wallet').innerText='R'+wallet.toFixed(2);document.getElementById('dWallet').innerText='R'+dWallet.toFixed(2);document.getElementById('aDrivers').innerText=drivers.length;document.getElementById('aVerified').innerText=drivers.filter(d=>d.status==='verified').length;document.getElementById('aPending').innerText=drivers.filter(d=>d.status==='pending').length;document.getElementById('reqCount').innerText=rides.length;let c=0;if(photos.selfie)c++;if(photos.idfront)c++;if(photos.idback)c++;document.getElementById('kycProg').innerText=c+'/3 photos';document.getElementById('boxSelfie').className=photos.selfie?'upload-box ok':'upload-box';document.getElementById('boxIDF').className=photos.idfront?'upload-box ok':'upload-box';document.getElementById('boxIDB').className=photos.idback?'upload-box ok':'upload-box';}
+function loadP(e,type){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(){photos[type]=r.result;if(type==='selfie'){document.getElementById('prevSelfie').src=r.result;document.getElementById('prevSelfie').style.display='block';}else if(type==='idfront'){document.getElementById('prevIDF').src=r.result;document.getElementById('prevIDF').style.display='block';}else{document.getElementById('prevIDB').src=r.result;document.getElementById('prevIDB').style.display='block';}save();};r.readAsDataURL(f);}
 function setMode(m){localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('adminView').style.display=m==='admin'?'block':'none';document.getElementById('bR').className=m==='rider'?'active r-on':'';document.getElementById('bD').className=m==='driver'?'active d-on':'';document.getElementById('bA').className=m==='admin'?'active a-on':'';checkReg();render();}
-function askAdmin(){let p=prompt('Admin PIN 4321');if(p==='4321')setMode('admin');}
-function gen(a){let c='AIRIDE-R'+a+'-'+Math.random().toString(36).substr(2,4).toUpperCase();navigator.clipboard.writeText(c);document.getElementById('vCode').value=c;}
+function askAdmin(){let p=prompt('PIN 4321');if(p==='4321')setMode('admin');}
 function redeem(){let c=document.getElementById('vCode').value;let m=c.match(/R(\d+)/);if(!m)return alert('Invalid');wallet+=parseInt(m[1]);document.getElementById('vCode').value='';save();}
-function checkReg(){if(curDriver){document.getElementById('regForm').style.display='none';document.getElementById('driverDash').style.display='block';document.getElementById('dNameShow').innerText=curDriver.name;document.getElementById('dInfoShow').innerText=curDriver.car+' • '+curDriver.plate+' • '+curDriver.area;document.getElementById('dPhotoShow').src=curDriver.photo;let badge=document.getElementById('verBadge'),msg=document.getElementById('verMsg'),btn=document.getElementById('onlineBtn');if(curDriver.status==='pending'){badge.innerHTML='<span class="badge b-pending">⏳ PENDING VERIFICATION</span>';msg.innerHTML='⏳ Your profile is under review by Admin. Wait for approval. Admin will check photo, ID, license.';btn.style.display='none';document.getElementById('dStatus').innerText='⏳ Waiting Admin Approval';}else if(curDriver.status==='verified'){badge.innerHTML='<span class="badge b-verified">✅ VERIFIED DRIVER</span>';msg.innerHTML='✅ You are verified! You can Go ONLINE and get rides. Women riders trust you!';btn.style.display='block';}else if(curDriver.status==='rejected'){badge.innerHTML='<span class="badge b-rejected">❌ REJECTED</span>';msg.innerHTML='❌ Rejected: '+curDriver.rejectReason+' - Please edit and resubmit.';btn.style.display='none';}}else{document.getElementById('regForm').style.display='block';document.getElementById('driverDash').style.display='none';if(photoData){document.getElementById('preview').src=photoData;document.getElementById('preview').style.display='block';}}}
-function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,li=document.getElementById('dLic').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!photoData)return document.getElementById('regMsg').innerText='❌ Add photo!';if(!n||!p||!id||!car||!pl||!li||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm';curDriver={id:Date.now(),name:n,phone:p,idNum:id,car:car,plate:pl,lic:li,area:ar,photo:photoData,status:'pending',time:new Date().toLocaleString()};drivers=drivers.filter(d=>d.phone!==p);drivers.unshift(curDriver);save();checkReg();alert('✅ Submitted for verification! Wait for Admin to approve.');setMode('driver');}
-function editDriver(){photoData=curDriver?curDriver.photo:'';curDriver=null;save();checkReg();}
-function requestRide(){let f=document.getElementById('from').value,t=document.getElementById('to').value;if(!f||!t)return alert('From To');let verCount=drivers.filter(d=>d.status==='verified').length;if(verCount===0)return alert('No verified drivers yet! Verify drivers in Admin first.');let r={id:Date.now(),from:f,to:t,time:new Date().toLocaleTimeString(),fare:70+Math.floor(Math.random()*50)};rides.unshift(r);save();document.getElementById('rideStatus').innerHTML='✅ Sent to '+verCount+' verified drivers! R'+r.fare;render();}
-function toggleOnline(i){if(!curDriver||curDriver.status!=='verified')return alert('You must be VERIFIED to go ONLINE!');if(!i)isOnline=!isOnline;save();let b=document.getElementById('onlineBtn');b.innerText=isOnline?'🔴 OFFLINE':'🟢 ONLINE';b.className=isOnline?'btn btn-red':'btn btn-green';document.getElementById('dStatus').innerText=isOnline?'🟢 ONLINE Verified ✅':'OFFLINE';render();}
-function render(){let d=document.getElementById('requests'),a=document.getElementById('aList'),ap=document.getElementById('aPendingList'),av=document.getElementById('aVerifiedList');d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:5px 0"><b>${r.from}→${r.to}</b> R${r.fare} <button class="btn btn-green" style="padding:5px" onclick="accept(${r.id})">Accept</button></div>`).join(''):'No requests (Go ONLINE)';a.innerHTML=rides.length?rides.map(r=>`• ${r.time} ${r.from}→${r.to} R${r.fare}`).join('<br>'):'No rides';let pend=drivers.filter(x=>x.status==='pending');let veri=drivers.filter(x=>x.status==='verified');ap.innerHTML=pend.length?pend.map(dr=>`<div class="driver-card"><img src="${dr.photo}" style="width:55px;height:55px;border-radius:50%;object-fit:cover;border:2px solid #facc15"><div style="flex:1"><b>${dr.name}</b> <span class="badge b-pending">PENDING</span><br><span class="small">${dr.phone} • ID:${dr.idNum}<br>${dr.car} ${dr.plate} • Lic:${dr.lic} • ${dr.area}<br>${dr.time}</span><br><div style="display:flex;gap:5px;margin-top:5px"><button class="btn btn-green" style="padding:5px;flex:1" onclick="verifyDriver(${dr.id})">✅ Verify</button><button class="btn btn-red" style="padding:5px;flex:1" onclick="rejectDriver(${dr.id})">❌ Reject</button><button class="btn btn-dark" style="padding:5px;flex:1" onclick="waDriver('${dr.phone}')">WA</button></div></div></div>`).join(''):'<span class="small">No pending</span>';av.innerHTML=veri.length?veri.map(dr=>`<div class="driver-card"><img src="${dr.photo}" style="width:45px;height:45px;border-radius:50%"><div><b>${dr.name}</b> <span class="badge b-verified">VERIFIED</span><br><span class="small">${dr.phone} • ${dr.car} ${dr.plate}<br>${dr.area}</span><br><button class="btn btn-dark" style="padding:4px;font-size:10px" onclick="rejectDriver(${dr.id})">Unverify</button></div></div>`).join(''):'<span class="small">No verified drivers</span>';}
-function verifyDriver(id){let dr=drivers.find(x=>x.id===id);if(dr){dr.status='verified';if(curDriver&&curDriver.id===id){curDriver.status='verified';}save();render();checkReg();alert('✅ Verified '+dr.name);}}
-function rejectDriver(id){let reason=prompt('Reject reason? e.g. Blurry photo, ID invalid');if(!reason)return;let dr=drivers.find(x=>x.id===id);if(dr){dr.status='rejected';dr.rejectReason=reason;if(curDriver&&curDriver.id===id){curDriver.status='rejected';curDriver.rejectReason=reason;}save();render();checkReg();}}
+function checkReg(){if(curDriver){document.getElementById('regForm').style.display='none';document.getElementById('driverDash').style.display='block';document.getElementById('dNameShow').innerText=curDriver.name;document.getElementById('dInfoShow').innerText=curDriver.car+' • '+curDriver.plate;document.getElementById('dPhotoShow').src=curDriver.selfie;document.getElementById('dSelfie').src=curDriver.selfie;document.getElementById('dIDF').src=curDriver.idfront;document.getElementById('dIDB').src=curDriver.idback;let badge=document.getElementById('verBadge'),msg=document.getElementById('verMsg'),btn=document.getElementById('onlineBtn');if(curDriver.status==='pending'){badge.innerHTML='<span class="badge b-pending">⏳ PENDING KYC</span>';msg.innerHTML='⏳ Admin checking Selfie + ID Front + ID Back. Wait...';btn.style.display='none';}else if(curDriver.status==='verified'){badge.innerHTML='<span class="badge b-verified">✅ FULLY VERIFIED</span>';msg.innerHTML='✅ KYC Approved! You can go ONLINE.';btn.style.display='block';}else{badge.innerHTML='<span class="badge b-rejected">❌ REJECTED</span>';msg.innerHTML='❌ '+curDriver.rejectReason;btn.style.display='none';}}else{document.getElementById('regForm').style.display='block';document.getElementById('driverDash').style.display='none';if(photos.selfie){document.getElementById('prevSelfie').src=photos.selfie;document.getElementById('prevSelfie').style.display='block';}if(photos.idfront){document.getElementById('prevIDF').src=photos.idfront;document.getElementById('prevIDF').style.display='block';}if(photos.idback){document.getElementById('prevIDB').src=photos.idback;document.getElementById('prevIDB').style.display='block';}}}
+function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,li=document.getElementById('dLic').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!photos.selfie||!photos.idfront||!photos.idback)return document.getElementById('regMsg').innerText='❌ Upload ALL 3 photos! Selfie + ID Front + ID Back';if(!n||!p||!id||!car||!pl||!li||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm';curDriver={id:Date.now(),name:n,phone:p,idNum:id,car:car,plate:pl,lic:li,area:ar,selfie:photos.selfie,idfront:photos.idfront,idback:photos.idback,status:'pending',time:new Date().toLocaleString()};drivers=drivers.filter(d=>d.phone!==p);drivers.unshift(curDriver);save();checkReg();alert('✅ KYC Submitted! 3 photos sent to Admin.');}
+function editDriver(){photos={selfie:curDriver.selfie,idfront:curDriver.idfront,idback:curDriver.idback};curDriver=null;save();checkReg();}
+function requestRide(){let f=document.getElementById('from').value,t=document.getElementById('to').value;if(!f||!t)return alert('From To');if(drivers.filter(d=>d.status==='verified').length===0)return alert('No verified drivers yet!');let r={id:Date.now(),from:f,to:t,time:new Date().toLocaleTimeString(),fare:70+Math.floor(Math.random()*50)};rides.unshift(r);save();document.getElementById('rideStatus').innerHTML='✅ Sent to verified drivers R'+r.fare;render();}
+function toggleOnline(i){if(!curDriver||curDriver.status!=='verified')return alert('Not verified!');if(!i)isOnline=!isOnline;save();let b=document.getElementById('onlineBtn');b.innerText=isOnline?'🔴 OFFLINE':'🟢 ONLINE';b.className=isOnline?'btn btn-red':'btn btn-green';render();}
+function render(){let d=document.getElementById('requests');d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:5px 0"><b>${r.from}→${r.to}</b> R${r.fare} <button class="btn btn-green" style="padding:5px" onclick="accept(${r.id})">Accept</button></div>`).join(''):'No requests';let ap=document.getElementById('aPendingList'),av=document.getElementById('aVerifiedList');let pend=drivers.filter(x=>x.status==='pending');let veri=drivers.filter(x=>x.status==='verified');ap.innerHTML=pend.length?pend.map(dr=>`<div class="driver-card"><div style="text-align:center"><img src="${dr.selfie}" style="width:70px;height:70px;border-radius:50%;border:2px solid #facc15"><br><span class="badge b-pending">PENDING</span></div><div style="flex:1"><b>${dr.name}</b><br><span class="small">${dr.phone} • ID:${dr.idNum}<br>${dr.car} ${dr.plate} • ${dr.area}<br>License:${dr.lic}</span><div class="kyc-grid"><div><span class="small">Selfie</span><img src="${dr.selfie}" class="photo" style="width:60px;height:60px;margin:0"></div><div><span class="small">ID Front</span><img src="${dr.idfront}" class="idphoto" style="height:60px"></div><div><span class="small">ID Back</span><img src="${dr.idback}" class="idphoto" style="height:60px"></div></div><div style="display:flex;gap:5px;margin-top:6px"><button class="btn btn-green" style="flex:1" onclick="verifyDriver(${dr.id})">✅ Approve KYC</button><button class="btn btn-red" style="flex:1" onclick="rejectDriver(${dr.id})">❌ Reject</button></div></div></div>`).join(''):'No pending KYC';av.innerHTML=veri.length?veri.map(dr=>`<div class="driver-card"><img src="${dr.selfie}" style="width:45px;height:45px;border-radius:50%"><div><b>${dr.name}</b> <span class="badge b-verified">KYC OK</span><br><span class="small">${dr.phone} • ${dr.car}</span></div></div>`).join(''):'No verified';}
+function verifyDriver(id){let dr=drivers.find(x=>x.id===id);dr.status='verified';if(curDriver&&curDriver.id===id)curDriver.status='verified';save();render();checkReg();alert('✅ KYC Approved '+dr.name);}
+function rejectDriver(id){let rs=prompt('Reject reason?');if(!rs)return;let dr=drivers.find(x=>x.id===id);dr.status='rejected';dr.rejectReason=rs;if(curDriver&&curDriver.id===id){curDriver.status='rejected';curDriver.rejectReason=rs;}save();render();checkReg();}
 function accept(id){let r=rides.find(x=>x.id===id);dWallet+=r.fare;rides=rides.filter(x=>x.id!==id);save();render();alert('Accepted R'+r.fare);}
-function waDriver(ph){let num=ph.replace(/\D/g,'');if(num.startsWith('0'))num='27'+num.slice(1);window.open('https://wa.me/'+num,'_blank');}
-function clearAll(){if(confirm('RESET ALL?')){localStorage.clear();location.reload();}}
 upd();setMode(localStorage.getItem('mode')||'rider');render();checkReg();
 </script>
 </body>
