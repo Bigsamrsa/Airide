@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AiRide SAFE - Live Camera Only</title>
+<title>AiRide SAFE - Face Match AI</title>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#0f172a;color:#fff;padding:12px}
@@ -13,7 +14,7 @@ body{background:#0f172a;color:#fff;padding:12px}
 .active{color:#fff}.r-on{background:#0ea5e9}.d-on{background:#22c55e;color:#000}.a-on{background:#a855f7}
 .wallet{font-size:26px;color:#22c55e;text-align:center;font-weight:900}
 input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:#fff;margin:4px 0}
-.btn{width:100%;padding:11px;border-radius:8px;border:none;font-weight:900;margin-top:5px}
+.btn{width:100%;padding:11px;border-radius:8px;border:none;font-weight:900;margin-top:5px;font-size:12px}
 .btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-red{background:#ef4444;color:#fff}.btn-gold{background:#facc15;color:#000}
 .photo{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #22c55e;display:block;margin:6px auto}
 .idphoto{width:100%;height:90px;object-fit:cover;border-radius:8px;border:2px solid #334155}
@@ -21,13 +22,15 @@ input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;
 .cam{width:100%;border-radius:10px;background:#000;max-height:220px}
 .badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:900}
 .b-pending{background:#facc15;color:#000}.b-verified{background:#22c55e;color:#000}.b-live{background:#ef4444;color:#fff;animation:blink 1s infinite}
+.b-match{background:#22c55e;color:#000}.b-nomatch{background:#ef4444;color:#fff}
 @keyframes blink{50%{opacity:.5}}
 .driver-card{background:#0f172a;padding:10px;border-radius:10px;margin:6px 0;display:flex;gap:8px}
 .small{opacity:.7;font-size:11px}
+.ai-box{background:#0f172a;border:2px solid #a855f7;border-radius:10px;padding:10px;margin:8px 0;text-align:center}
 </style>
 </head>
 <body>
-<div class="card" style="text-align:center"><b>🚗 AiRide SAFE 🛡️</b><br><span class="small">LIVE CAMERA ONLY - No Gallery - Anti-Scam</span></div>
+<div class="card" style="text-align:center"><b>🚗 AiRide SAFE 🤖 Face Match AI</b><br><span class="small" id="aiStatus">Loading Face AI models... ⏳</span></div>
 <div class="toggle">
 <button id="bR" onclick="setMode('rider')">Rider</button>
 <button id="bD" onclick="setMode('driver')">Driver</button>
@@ -41,87 +44,86 @@ input,select{width:100%;padding:11px;border-radius:8px;border:1px solid #334155;
 
 <div id="driverView" style="display:none">
 <div id="regForm" class="card" style="border:2px solid #22c55e">
-<b>👩‍✈️ ANTI-SCAM REGISTRATION - LIVE CAMERA ONLY</b><br><span class="small" style="color:#ef4444">⚠️ Must use LIVE camera, gallery blocked to stop fake IDs!</span>
+<b>👩‍✈️ AI FACE MATCH REGISTRATION</b><br><span class="small" style="color:#a855f7">🤖 AI checks if selfie face = ID face!</span>
 
 <div style="background:#0f172a;padding:8px;border-radius:8px;border:1px solid #0ea5e9;margin:6px 0">
 <b>📧 Email *</b>
 <div style="display:flex;gap:5px"><input id="dEmail" type="email" placeholder="email@gmail.com" style="flex:1"><button class="btn btn-blue" style="width:90px" onclick="sendEmailCode()">Send</button></div>
 <div id="otpSection" style="display:none;margin-top:5px">
-<div style="display:flex;gap:5px"><input id="otpInput" placeholder="6-digit code" style="flex:1"><button class="btn btn-green" style="width:80px" onclick="verifyEmailCode()">Verify</button></div>
+<div style="display:flex;gap:5px"><input id="otpInput" placeholder="code" style="flex:1"><button class="btn btn-green" style="width:80px" onclick="verifyEmailCode()">Verify</button></div>
 <div class="small">Code: <b id="demoCode" style="color:#22c55e"></b></div>
 </div>
-<div id="emailVerifiedMsg" style="display:none;color:#22c55e;text-align:center;font-weight:bold">✅ Verified: <span id="verifiedEmailShow"></span></div>
+<div id="emailVerifiedMsg" style="display:none;color:#22c55e;text-align:center;font-weight:bold">✅ <span id="verifiedEmailShow"></span></div>
 </div>
 
-<!-- SELFIE LIVE CAM -->
 <div class="upload-box" id="boxSelfie">
-<b>🤳 SELFIE - LIVE CAMERA <span class="badge b-live">● LIVE</span></b><br>
-<span class="small">Must match ID face!</span>
-<video id="vidSelfie" class="cam" autoplay playsinline style="display:none"></video>
-<canvas id="canSelfie" style="display:none"></canvas>
+<b>🤳 SELFIE LIVE <span class="badge b-live">● LIVE</span></b>
+<video id="vidSelfie" class="cam" autoplay playsinline style="display:none"></video><canvas id="canSelfie" style="display:none"></canvas>
 <img id="prevSelfie" class="photo" style="display:none">
 <div style="display:flex;gap:5px;margin-top:6px">
-<button class="btn btn-blue" style="flex:1" onclick="startCam('selfie')">📷 Open Camera</button>
-<button class="btn btn-green" style="flex:1;display:none" id="capSelfie" onclick="takePhoto('selfie')">✅ Capture Selfie</button>
-</div>
-<div class="small" style="color:#22c55e" id="statusSelfie">Tap Open Camera → Capture</div>
+<button class="btn btn-blue" style="flex:1" onclick="startCam('selfie')">📷 Camera</button>
+<button class="btn btn-green" style="flex:1;display:none" id="capSelfie" onclick="takePhoto('selfie')">✅ Capture</button>
+</div><div class="small" id="statusSelfie">Open camera</div>
 </div>
 
-<!-- ID FRONT LIVE CAM -->
 <div class="upload-box" id="boxIDF">
-<b>🪪 ID FRONT - LIVE CAMERA <span class="badge b-live">● LIVE</span></b>
-<video id="vidIDF" class="cam" autoplay playsinline style="display:none"></video>
-<canvas id="canIDF" style="display:none"></canvas>
+<b>🪪 ID FRONT LIVE <span class="badge b-live">● LIVE</span></b>
+<video id="vidIDF" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDF" style="display:none"></canvas>
 <img id="prevIDF" class="idphoto" style="display:none">
 <div style="display:flex;gap:5px;margin-top:6px">
-<button class="btn btn-blue" style="flex:1" onclick="startCam('idfront')">📷 Open Camera</button>
-<button class="btn btn-green" style="flex:1;display:none" id="capIDF" onclick="takePhoto('idfront')">✅ Capture Front</button>
-</div>
-<div class="small" id="statusIDF">Place ID Front flat, good light</div>
+<button class="btn btn-blue" style="flex:1" onclick="startCam('idfront')">📷 Camera</button>
+<button class="btn btn-green" style="flex:1;display:none" id="capIDF" onclick="takePhoto('idfront')">✅ Capture</button>
+</div><div class="small" id="statusIDF">ID Front flat</div>
 </div>
 
-<!-- ID BACK LIVE CAM -->
 <div class="upload-box" id="boxIDB">
-<b>🪪 ID BACK - LIVE CAMERA <span class="badge b-live">● LIVE</span></b>
-<video id="vidIDB" class="cam" autoplay playsinline style="display:none"></video>
-<canvas id="canIDB" style="display:none"></canvas>
+<b>🪪 ID BACK LIVE</b>
+<video id="vidIDB" class="cam" autoplay playsinline style="display:none"></video><canvas id="canIDB" style="display:none"></canvas>
 <img id="prevIDB" class="idphoto" style="display:none">
 <div style="display:flex;gap:5px;margin-top:6px">
-<button class="btn btn-blue" style="flex:1" onclick="startCam('idback')">📷 Open Camera</button>
-<button class="btn btn-green" style="flex:1;display:none" id="capIDB" onclick="takePhoto('idback')">✅ Capture Back</button>
+<button class="btn btn-blue" style="flex:1" onclick="startCam('idback')">📷 Camera</button>
+<button class="btn btn-green" style="flex:1;display:none" id="capIDB" onclick="takePhoto('idback')">✅ Capture</button>
+</div><div class="small" id="statusIDB">ID Back flat</div>
 </div>
-<div class="small" id="statusIDB">Place ID Back flat</div>
+
+<!-- AI FACE MATCH RESULT -->
+<div id="aiResult" class="ai-box" style="display:none">
+<b>🤖 AI Face Match Result</b><br>
+<div id="aiMatchText" style="font-size:18px;font-weight:900;margin:6px 0">Checking...</div>
+<div class="small" id="aiScore"></div>
+<div id="aiBar" style="background:#334155;height:10px;border-radius:5px;margin:6px 0;overflow:hidden"><div id="aiBarFill" style="height:100%;width:0%;background:#22c55e;transition:1s"></div></div>
 </div>
 
 <input id="dName" placeholder="Full Name as on ID *"><input id="dPhone" placeholder="WhatsApp *"><input id="dID" placeholder="ID Number *">
 <select id="dCar"><option value="">Car Type *</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other</option></select>
 <input id="dPlate" placeholder="Plate *">
 <select id="dArea"><option value="">Area *</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option></select>
-<label class="small"><input type="checkbox" id="dWoman"> I confirm live photos are real, not fake</label>
-<button class="btn btn-green" onclick="registerDriver()">📤 SUBMIT LIVE KYC</button>
+<label class="small"><input type="checkbox" id="dWoman"> I confirm photos are real</label>
+<button class="btn btn-green" id="submitBtn" onclick="registerDriver()" style="display:none">📤 SUBMIT - AI MATCH OK</button>
 <div id="regMsg" class="small" style="color:#ef4444;text-align:center"></div>
-<div class="small" style="text-align:center">Progress: <span id="kycProg">0/4</span> • Gallery BLOCKED ✅</div>
+<div class="small" style="text-align:center">Progress: <span id="kycProg">0/4</span> • AI: <span id="aiProg">Waiting photos</span></div>
 </div>
 
 <div id="driverDash" style="display:none">
 <div class="card" style="text-align:center">
 <img id="dPhotoShow" class="photo"><div id="verBadge"></div>
-<b id="dNameShow"></b><br><span class="small" id="dInfoShow"></span><br><span class="small" id="dEmailShow"></span>
+<b id="dNameShow"></b><br><span class="small" id="dInfoShow"></span>
 <div class="wallet" id="dWallet">R0</div>
 <div id="verMsg" class="card" style="background:#0f172a"></div>
+<div id="driverAI" class="ai-box"></div>
 <button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()" style="display:none">🟢 Go ONLINE</button>
 <div id="dStatus" class="small"></div>
-<button class="btn btn-dark" onclick="editDriver()">Resubmit with Live Camera</button>
+<button class="btn btn-dark" onclick="editDriver()">Resubmit</button>
 </div>
 </div>
 </div>
 
 <div id="adminView" style="display:none">
-<div class="card" style="border:2px solid #a855f7">👑 ADMIN - Live Camera Verified
+<div class="card" style="border:2px solid #a855f7">👑 ADMIN - AI Face Match
 <div style="display:flex;gap:6px;text-align:center;margin-top:6px"><div style="flex:1;background:#0f172a;padding:6px;border-radius:8px"><b id="aDrivers">0</b><br><span class="small">Total</span></div><div style="flex:1;background:#1a2e1a;padding:6px;border-radius:8px"><b id="aVerified" style="color:#22c55e">0</b><br><span class="small">Verified</span></div><div style="flex:1;background:#2e2a1a;padding:6px;border-radius:8px"><b id="aPending" style="color:#facc15">0</b><br><span class="small">Pending</span></div></div>
 </div>
-<div class="card"><b>🔍 Pending - Check LIVE photos</b><div id="aPendingList"></div></div>
-<div class="card"><b>✅ Verified - Live Camera OK</b><div id="aVerifiedList"></div></div>
+<div class="card"><b>🔍 Pending - AI Checked</b><div id="aPendingList"></div></div>
+<div class="card"><b>✅ Verified</b><div id="aVerifiedList"></div></div>
 <div class="card"><button class="btn btn-red" onclick="clearAll()">RESET ALL</button></div>
 </div>
 
@@ -137,65 +139,89 @@ let emailVerified=localStorage.getItem('emailVerified')==='true';
 let verifiedEmail=localStorage.getItem('verifiedEmail')||'';
 let currentOTP=localStorage.getItem('currentOTP')||'';
 let streams={};
+let faceModelsLoaded=false;
+let lastMatch={score:0,matched:false};
 
-function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('online',isOnline);localStorage.setItem('photos',JSON.stringify(photos));localStorage.setItem('emailVerified',emailVerified);localStorage.setItem('verifiedEmail',verifiedEmail);localStorage.setItem('currentOTP',currentOTP);upd();}
+async function loadModels(){
+ try{
+  const MODEL_URL='https://justadudewhohacks.github.io/face-api.js/models';
+  document.getElementById('aiStatus').innerText='Loading AI... ⏳ (10 sec first time)';
+  await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+  await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+  faceModelsLoaded=true;
+  document.getElementById('aiStatus').innerText='🤖 Face AI Ready ✅ - Take selfie + ID Front';
+ }catch(e){document.getElementById('aiStatus').innerText='AI load failed, check internet. Still works without AI.';faceModelsLoaded=true;}
+}
+loadModels();
+
+function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('online',isOnline);localStorage.setItem('photos',JSON.stringify(photos));localStorage.setItem('emailVerified',emailVerified);localStorage.setItem('verifiedEmail',verifiedEmail);localStorage.setItem('currentOTP',currentOTP);localStorage.setItem('lastMatch',JSON.stringify(lastMatch));upd();}
 function upd(){try{document.getElementById('wallet').innerText='R'+wallet.toFixed(2);document.getElementById('dWallet').innerText='R'+dWallet.toFixed(2);document.getElementById('aDrivers').innerText=drivers.length;document.getElementById('aVerified').innerText=drivers.filter(d=>d.status==='verified').length;document.getElementById('aPending').innerText=drivers.filter(d=>d.status==='pending').length;}catch(e){}let c=0;if(emailVerified)c++;if(photos.selfie)c++;if(photos.idfront)c++;if(photos.idback)c++;try{document.getElementById('kycProg').innerText=c+'/4';}catch(e){}}
 
-// LIVE CAMERA - No Gallery!
 async function startCam(type){
  try{
   let vid=document.getElementById(type==='selfie'?'vidSelfie':type==='idfront'?'vidIDF':'vidIDB');
   let capBtn=document.getElementById(type==='selfie'?'capSelfie':type==='idfront'?'capIDF':'capIDB');
   let facing=type==='selfie'?'user':'environment';
-  if(streams[type]){streams[type].getTracks().forEach(t=>t.stop());}
-  let stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:640,height:480},audio:false});
-  streams[type]=stream;
-  vid.srcObject=stream;
-  vid.style.display='block';
-  capBtn.style.display='block';
-  document.getElementById('prev'+(type==='selfie'?'Selfie':type==='idfront'?'IDF':'IDB')).style.display='none';
-  document.getElementById(type==='selfie'?'statusSelfie':type==='idfront'?'statusIDF':'statusIDB').innerText='📷 LIVE - Now tap Capture!';
- }catch(err){alert('Camera error: '+err.message+'\nAllow camera permission in phone settings!');}
+  if(streams[type])streams[type].getTracks().forEach(t=>t.stop());
+  let stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});
+  streams[type]=stream;vid.srcObject=stream;vid.style.display='block';capBtn.style.display='block';
+ }catch(err){alert('Allow camera! '+err.message);}
 }
-function takePhoto(type){
+async function takePhoto(type){
  let vid=document.getElementById(type==='selfie'?'vidSelfie':type==='idfront'?'vidIDF':'vidIDB');
  let can=document.getElementById(type==='selfie'?'canSelfie':type==='idfront'?'canIDF':'canIDB');
  let imgPrev=document.getElementById(type==='selfie'?'prevSelfie':type==='idfront'?'prevIDF':'prevIDB');
  let capBtn=document.getElementById(type==='selfie'?'capSelfie':type==='idfront'?'capIDF':'capIDB');
- can.width=vid.videoWidth;can.height=vid.videoHeight;
- can.getContext('2d').drawImage(vid,0,0);
- // compress
- let tempCan=document.createElement('canvas');
- let max=500;let w=can.width,h=can.height;
+ can.width=vid.videoWidth;can.height=vid.videoHeight;can.getContext('2d').drawImage(vid,0,0);
+ let tempCan=document.createElement('canvas');let max=500;let w=can.width,h=can.height;
  if(w>h){if(w>max){h*=max/w;w=max;}}else{if(h>max){w*=max/h;h=max;}}
- tempCan.width=w;tempCan.height=h;
- tempCan.getContext('2d').drawImage(can,0,0,w,h);
- let data=tempCan.toDataURL('image/jpeg',0.65);
- photos[type]=data;
- imgPrev.src=data;imgPrev.style.display='block';
+ tempCan.width=w;tempCan.height=h;tempCan.getContext('2d').drawImage(can,0,0,w,h);
+ let data=tempCan.toDataURL('image/jpeg',0.7);
+ photos[type]=data;imgPrev.src=data;imgPrev.style.display='block';
  vid.style.display='none';capBtn.style.display='none';
- if(streams[type]){streams[type].getTracks().forEach(t=>t.stop());}
- document.getElementById(type==='selfie'?'statusSelfie':type==='idfront'?'statusIDF':'statusIDB').innerHTML='✅ <span style="color:#22c55e">LIVE Captured! Real photo ✅</span>';
+ if(streams[type])streams[type].getTracks().forEach(t=>t.stop());
+ document.getElementById(type==='selfie'?'statusSelfie':type==='idfront'?'statusIDF':'statusIDB').innerHTML='✅ LIVE Captured';
  save();
+ if(photos.selfie&&photos.idfront&&faceModelsLoaded)runFaceMatch();
+}
+async function runFaceMatch(){
+ if(!photos.selfie||!photos.idfront)return;
+ document.getElementById('aiResult').style.display='block';
+ document.getElementById('aiMatchText').innerText='🤖 AI Analyzing faces...';
+ document.getElementById('aiScore').innerText='Detecting face in selfie and ID...';
+ document.getElementById('aiProg').innerText='AI checking...';
+ try{
+  let imgSelfie=await faceapi.fetchImage(photos.selfie);
+  let imgID=await faceapi.fetchImage(photos.idfront);
+  let detSelfie=await faceapi.detectSingleFace(imgSelfie).withFaceLandmarks().withFaceDescriptor();
+  let detID=await faceapi.detectSingleFace(imgID).withFaceLandmarks().withFaceDescriptor();
+  if(!detSelfie){document.getElementById('aiMatchText').innerHTML='❌ No face in Selfie! Retake';document.getElementById('aiScore').innerText='Move closer, good light';return;}
+  if(!detID){document.getElementById('aiMatchText').innerHTML='❌ No face in ID Front! Retake ID clearer';document.getElementById('aiScore').innerText='ID photo must show face clearly';return;}
+  let distance=faceapi.euclideanDistance(detSelfie.descriptor,detID.descriptor);
+  let similarity=Math.max(0,100-(distance*100));
+  lastMatch={distance:distance,score:similarity,matched:distance<0.6};
+  document.getElementById('aiBarFill').style.width=similarity+'%';
+  document.getElementById('aiBarFill').style.background=lastMatch.matched?'#22c55e':'#ef4444';
+  document.getElementById('aiScore').innerText='Distance: '+distance.toFixed(3)+' (lower is better) • Similarity: '+similarity.toFixed(1)+'%';
+  if(lastMatch.matched){
+   document.getElementById('aiMatchText').innerHTML='✅ FACE MATCH! <span class="badge b-match">'+similarity.toFixed(0)+'% MATCH</span>';
+   document.getElementById('aiProg').innerText='✅ Match '+similarity.toFixed(0)+'%';
+   document.getElementById('submitBtn').style.display='block';
+   document.getElementById('submitBtn').innerText='📤 SUBMIT - AI Says '+similarity.toFixed(0)+'% MATCH ✅';
+  }else{
+   document.getElementById('aiMatchText').innerHTML='❌ FACE MISMATCH! <span class="badge b-nomatch">'+similarity.toFixed(0)+'% ONLY</span>';
+   document.getElementById('aiProg').innerText='❌ Mismatch '+similarity.toFixed(0)+'%';
+   document.getElementById('submitBtn').style.display='none';
+   document.getElementById('regMsg').innerText='❌ AI says selfie does NOT match ID face ('+similarity.toFixed(0)+'%). Retake with same person! Must be >60%';
+  }
+  save();
+ }catch(e){document.getElementById('aiMatchText').innerText='AI Error: '+e.message;document.getElementById('submitBtn').style.display='block';}
 }
 
 function sendEmailCode(){let em=document.getElementById('dEmail').value.trim();if(!em||!em.includes('@'))return alert('Enter valid email!');currentOTP=Math.floor(100000+Math.random()*900000).toString();verifiedEmail=em;save();document.getElementById('otpSection').style.display='block';document.getElementById('demoCode').innerText=currentOTP;alert('Code: '+currentOTP);}
-function verifyEmailCode(){let inp=document.getElementById('otpInput').value.trim();if(inp===currentOTP){emailVerified=true;save();document.getElementById('otpSection').style.display='none';document.getElementById('emailVerifiedMsg').style.display='block';document.getElementById('verifiedEmailShow').innerText=verifiedEmail;document.getElementById('dEmail').disabled=true;alert('Email verified!');}else alert('Wrong! Code is '+currentOTP);}
+function verifyEmailCode(){let inp=document.getElementById('otpInput').value.trim();if(inp===currentOTP){emailVerified=true;save();document.getElementById('otpSection').style.display='none';document.getElementById('emailVerifiedMsg').style.display='block';document.getElementById('verifiedEmailShow').innerText=verifiedEmail;document.getElementById('dEmail').disabled=true;}else alert('Wrong! '+currentOTP);}
 function setMode(m){localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('adminView').style.display=m==='admin'?'block':'none';document.getElementById('bR').className=m==='rider'?'active r-on':'';document.getElementById('bD').className=m==='driver'?'active d-on':'';document.getElementById('bA').className=m==='admin'?'active a-on':'';checkReg();render();}
 function askAdmin(){let p=prompt('PIN 4321');if(p==='4321')setMode('admin');}
 function gen(a){let c='AIRIDE-R'+a+'-'+Math.random().toString(36).substr(2,4).toUpperCase();navigator.clipboard.writeText(c);document.getElementById('vCode').value=c;}
-function redeem(){let c=document.getElementById('vCode').value;let m=c.match(/R(\d+)/);if(!m)return alert('Invalid');wallet+=parseInt(m[1]);document.getElementById('vCode').value='';save();}
-function checkReg(){if(curDriver){document.getElementById('regForm').style.display='none';document.getElementById('driverDash').style.display='block';document.getElementById('dNameShow').innerText=curDriver.name;document.getElementById('dInfoShow').innerText=curDriver.car+' • '+curDriver.plate;document.getElementById('dEmailShow').innerText='📧 '+curDriver.email+' • LIVE ✅';document.getElementById('dPhotoShow').src=curDriver.selfie;let b=document.getElementById('verBadge'),msg=document.getElementById('verMsg'),btn=document.getElementById('onlineBtn');if(curDriver.status==='pending'){b.innerHTML='<span class="badge b-pending">⏳ PENDING LIVE CHECK</span>';msg.innerHTML='⏳ Admin checking LIVE photos';btn.style.display='none';}else if(curDriver.status==='verified'){b.innerHTML='<span class="badge b-verified">✅ LIVE VERIFIED</span>';msg.innerHTML='✅ Live Camera KYC Approved!';btn.style.display='block';}else{b.innerHTML='<span class="badge b-rejected">❌ REJECTED</span>';msg.innerHTML='❌ '+curDriver.rejectReason;btn.style.display='none';}}else{document.getElementById('regForm').style.display='block';document.getElementById('driverDash').style.display='none';if(emailVerified){document.getElementById('emailVerifiedMsg').style.display='block';document.getElementById('verifiedEmailShow').innerText=verifiedEmail;document.getElementById('dEmail').value=verifiedEmail;}if(photos.selfie){document.getElementById('prevSelfie').src=photos.selfie;document.getElementById('prevSelfie').style.display='block';document.getElementById('statusSelfie').innerHTML='✅ LIVE Captured';}if(photos.idfront){document.getElementById('prevIDF').src=photos.idfront;document.getElementById('prevIDF').style.display='block';}if(photos.idback){document.getElementById('prevIDB').src=photos.idback;document.getElementById('prevIDB').style.display='block';}}}
-function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!emailVerified)return document.getElementById('regMsg').innerText='❌ Verify email first!';if(!photos.selfie||!photos.idfront||!photos.idback)return document.getElementById('regMsg').innerText='❌ Take ALL 3 LIVE photos with camera!';if(!n||!p||!id||!car||!pl||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm';curDriver={id:Date.now(),name:n,phone:p,email:verifiedEmail,idNum:id,car:car,plate:pl,area:ar,selfie:photos.selfie,idfront:photos.idfront,idback:photos.idback,status:'pending',liveVerified:true,time:new Date().toLocaleString()};drivers=drivers.filter(d=>d.phone!==p);drivers.unshift(curDriver);save();checkReg();alert('✅ LIVE KYC Submitted - No gallery, 100% real!');}
-function editDriver(){if(curDriver)photos={selfie:curDriver.selfie,idfront:curDriver.idfront,idback:curDriver.idback};curDriver=null;save();location.reload();}
-function requestRide(){let f=document.getElementById('from').value,t=document.getElementById('to').value;if(!f||!t)return alert('From To');if(drivers.filter(d=>d.status==='verified').length===0)return alert('No verified drivers');let r={id:Date.now(),from:f,to:t,time:new Date().toLocaleTimeString(),fare:70+Math.floor(Math.random()*50)};rides.unshift(r);save();document.getElementById('rideStatus').innerHTML='✅ Sent R'+r.fare;render();}
-function toggleOnline(i){if(!curDriver||curDriver.status!=='verified')return alert('Not verified');if(!i)isOnline=!isOnline;save();let b=document.getElementById('onlineBtn');b.innerText=isOnline?'🔴 OFFLINE':'🟢 ONLINE';b.className=isOnline?'btn btn-red':'btn btn-green';render();}
-function render(){let d=document.getElementById('requests');if(d)d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:5px 0"><b>${r.from}→${r.to}</b> R${r.fare}<br><button class="btn btn-green" style="padding:6px" onclick="accept(${r.id})">Accept</button></div>`).join(''):'No requests';let ap=document.getElementById('aPendingList'),av=document.getElementById('aVerifiedList');let pend=drivers.filter(x=>x.status==='pending');let veri=drivers.filter(x=>x.status==='verified');if(ap)ap.innerHTML=pend.length?pend.map(dr=>`<div class="driver-card"><img src="${dr.selfie}" style="width:55px;height:55px;border-radius:50%;border:2px solid #facc15"><div style="flex:1"><b>${dr.name}</b> <span class="badge b-pending">LIVE PENDING</span><br><span class="small">${dr.phone} • ${dr.email}<br>ID:${dr.idNum} • ${dr.car} ${dr.plate}</span><br><div style="display:flex;gap:4px;margin-top:4px"><img src="${dr.selfie}" style="width:50px;height:50px;border-radius:5px;border:1px solid #22c55e"><img src="${dr.idfront}" style="width:60px;height:50px;border-radius:5px"><img src="${dr.idback}" style="width:60px;height:50px;border-radius:5px"></div><div style="display:flex;gap:5px;margin-top:5px"><button class="btn btn-green" style="flex:1" onclick="verifyDriver(${dr.id})">✅ Approve LIVE</button><button class="btn btn-red" style="flex:1" onclick="rejectDriver(${dr.id})">❌ Reject</button></div></div></div>`).join(''):'No pending live';if(av)av.innerHTML=veri.length?veri.map(dr=>`<div class="driver-card"><img src="${dr.selfie}" style="width:40px;height:40px;border-radius:50%"><div><b>${dr.name}</b> <span class="badge b-verified">LIVE OK</span><br><span class="small">${dr.phone} • ${dr.email}</span></div></div>`).join(''):'No verified';}
-function verifyDriver(id){let dr=drivers.find(x=>x.id===id);dr.status='verified';if(curDriver&&curDriver.id===id)curDriver.status='verified';save();render();checkReg();alert('✅ LIVE Verified '+dr.name);}
-function rejectDriver(id){let rs=prompt('Reject reason?');if(!rs)return;let dr=drivers.find(x=>x.id===id);dr.status='rejected';dr.rejectReason=rs;if(curDriver&&curDriver.id===id){curDriver.status='rejected';curDriver.rejectReason=rs;}save();render();checkReg();}
-function accept(id){let r=rides.find(x=>x.id===id);dWallet+=r.fare;rides=rides.filter(x=>x.id!==id);save();render();}
-function clearAll(){if(confirm('RESET ALL?')){localStorage.clear();location.reload();}}
-upd();setMode(localStorage.getItem('mode')||'rider');render();checkReg();
-</script>
-</body>
-</html>
+function redeem(){let c=document.getElementBy
