@@ -3,116 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AiRide SAFE - Admin</title>
+<title>AiRide SAFE - Photo Profile</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{background:#0f172a;color:#fff;padding:12px}
 .card{background:#1e293b;border-radius:16px;padding:16px;margin-bottom:12px;border:1px solid #334155}
 .toggle{display:flex;background:#0f172a;border-radius:30px;padding:4px;border:1px solid #334155;margin-bottom:12px}
-.toggle button{padding:8px 14px;border-radius:25px;border:none;font-weight:bold;cursor:pointer;font-size:13px}
-.active{color:#fff}
-.r-on{background:#0ea5e9}.d-on{background:#22c55e;color:#000}.a-on{background:#a855f7}
-.wallet{font-size:36px;color:#22c55e;text-align:center;font-weight:900}
-input{width:100%;padding:14px;border-radius:12px;border:1px solid #334155;background:#0f172a;color:#fff;margin:6px 0}
-.btn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:900;font-size:15px;cursor:pointer;margin-top:8px}
+.toggle button{padding:8px 12px;border-radius:25px;border:none;font-weight:bold;cursor:pointer;font-size:12px}
+.active{color:#fff}.r-on{background:#0ea5e9}.d-on{background:#22c55e;color:#000}.a-on{background:#a855f7}
+.wallet{font-size:32px;color:#22c55e;text-align:center;font-weight:900}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#0f172a;color:#fff;margin:5px 0}
+.btn{width:100%;padding:12px;border-radius:10px;border:none;font-weight:900;cursor:pointer;margin-top:6px}
 .btn-green{background:#22c55e;color:#000}.btn-blue{background:#0ea5e9;color:#fff}.btn-dark{background:#334155;color:#fff}.btn-purple{background:#a855f7;color:#fff}.btn-red{background:#ef4444;color:#fff}
-.ride-item{background:#0f172a;padding:10px;border-radius:10px;margin:6px 0;border-left:4px solid #22c55e}
-.stat{display:flex;justify-content:space-between;background:#0f172a;padding:12px;border-radius:10px;margin:6px 0}
+.photo-box{width:100px;height:100px;border-radius:50%;background:#0f172a;border:3px solid #22c55e;object-fit:cover;display:block;margin:10px auto}
+.driver-card{background:#0f172a;padding:10px;border-radius:10px;margin:6px 0;display:flex;gap:10px;align-items:center}
 .small{opacity:.7;font-size:12px}
 </style>
 </head>
 <body>
-<div class="card" style="text-align:center">
-<b style="font-size:20px">🚗 AiRide SAFE 🛡️</b><br><span class="small">Durban • Boss Control</span>
-</div>
-
+<div class="card" style="text-align:center"><b>🚗 AiRide SAFE 🛡️</b><br><span class="small">Women Drivers - Photo Verified</span></div>
 <div class="toggle">
 <button id="bR" onclick="setMode('rider')">Rider</button>
 <button id="bD" onclick="setMode('driver')">Driver</button>
 <button id="bA" onclick="askAdmin()">Admin</button>
 </div>
 
-<!-- RIDER -->
 <div id="riderView">
-<div class="card">
-💰 <b>Wallet</b><div class="wallet" id="wallet">R 0</div>
-<div id="walletMsg" class="small" style="text-align:center">Redeem voucher</div>
-<input id="vCode" placeholder="Voucher code e.g. AIRIDE-R100-XXXX">
-<button class="btn btn-green" onclick="redeem()">✅ Redeem</button>
-<div style="display:flex;gap:6px">
-<button class="btn btn-dark" style="flex:1" onclick="gen(50)">R50</button>
-<button class="btn btn-dark" style="flex:1" onclick="gen(100)">R100</button>
-<button class="btn btn-dark" style="flex:1" onclick="gen(200)">R200</button>
-</div>
-</div>
-<div class="card">
-🚕 <b>Request Ride</b>
-<input id="from" placeholder="From: Umlazi">
-<input id="to" placeholder="To: Durban Central">
-<button class="btn btn-blue" onclick="requestRide()">🔍 Find Woman Driver</button>
-<div id="rideStatus" class="small" style="margin-top:8px"></div>
-</div>
+<div class="card">💰 Wallet<div class="wallet" id="wallet">R 0</div>
+<input id="vCode" placeholder="Voucher"><button class="btn btn-green" onclick="redeem()">Redeem</button>
+<div style="display:flex;gap:6px"><button class="btn btn-dark" style="flex:1" onclick="gen(50)">R50</button><button class="btn btn-dark" style="flex:1" onclick="gen(100)">R100</button><button class="btn btn-dark" style="flex:1" onclick="gen(200)">R200</button></div></div>
+<div class="card">🚕 Request<input id="from" placeholder="From"><input id="to" placeholder="To"><button class="btn btn-blue" onclick="requestRide()">Find Driver</button><div id="rideStatus" class="small"></div></div>
 </div>
 
-<!-- DRIVER -->
 <div id="driverView" style="display:none">
-<div class="card">
-👩‍✈️ <b>Driver</b><div class="wallet" id="dWallet">R 0</div>
-<div class="small" style="text-align:center">Today Earnings</div>
+<div id="regForm" class="card" style="border:2px solid #22c55e">
+👩‍✈️ <b>Driver Registration with Photo</b>
+<img id="preview" class="photo-box" style="display:none">
+<input type="file" id="photoInput" accept="image/*" onchange="loadPhoto(event)">
+<span class="small">📸 Take selfie / Upload photo *</span>
+<input id="dName" placeholder="Full Name *">
+<input id="dPhone" placeholder="WhatsApp *">
+<input id="dID" placeholder="ID Number *">
+<select id="dCar"><option value="">Car Type</option><option>Toyota Quantum</option><option>Corolla</option><option>Avensis</option><option>Other</option></select>
+<input id="dPlate" placeholder="Plate *">
+<select id="dArea"><option value="">Area</option><option>Umlazi</option><option>Durban Central</option><option>Chatsworth</option><option>Isipingo</option></select>
+<label class="small"><input type="checkbox" id="dWoman"> I am woman driver</label>
+<button class="btn btn-green" onclick="registerDriver()">✅ REGISTER</button>
+<div id="regMsg" class="small" style="color:#ef4444"></div>
+</div>
+
+<div id="driverDash" style="display:none">
+<div class="card" style="text-align:center">
+<img id="dPhotoShow" class="photo-box">
+<b id="dNameShow">Driver</b><br><span class="small" id="dInfoShow"></span>
+<div class="wallet" id="dWallet">R 0</div>
 <button id="onlineBtn" class="btn btn-green" onclick="toggleOnline()">🟢 Go ONLINE</button>
-<div id="dStatus" class="small" style="text-align:center;margin-top:6px">OFFLINE</div>
+<div id="dStatus" class="small">OFFLINE</div>
+<button class="btn btn-dark" onclick="editDriver()">Edit Profile / Change Photo</button>
 </div>
-<div class="card">
-📋 <b>Requests <span id="reqCount" style="background:#22c55e;color:#000;padding:2px 8px;border-radius:20px;font-size:12px">0</span></b>
-<div id="requests"></div>
+<div class="card">📋 Requests <span id="reqCount" style="background:#22c55e;color:#000;padding:2px 8px;border-radius:20px">0</span><div id="requests"></div></div>
 </div>
 </div>
 
-<!-- ADMIN -->
 <div id="adminView" style="display:none">
-<div class="card" style="border:2px solid #a855f7">
-👑 <b>ADMIN PANEL - Boss Only</b>
-<div class="stat"><span>Total Rides</span><b id="aRides">0</b></div>
-<div class="stat"><span>Total Driver Earnings</span><b id="aEarn" style="color:#22c55e">R 0</b></div>
-<div class="stat"><span>Rider Wallet</span><b id="aWallet" style="color:#0ea5e9">R 0</b></div>
-<div class="stat"><span>Drivers Online?</span><b id="aOnline">OFFLINE</b></div>
-<div class="stat"><span>Vouchers Redeemed</span><b id="aVouch">0</b></div>
+<div class="card" style="border:2px solid #a855f7">👑 ADMIN - All Drivers with Photo
+<div style="display:flex;gap:8px;text-align:center"><div style="flex:1;background:#0f172a;padding:8px;border-radius:8px"><b id="aDrivers">0</b><br><span class="small">Drivers</span></div><div style="flex:1;background:#0f172a;padding:8px;border-radius:8px"><b id="aRides">0</b><br><span class="small">Rides</span></div><div style="flex:1;background:#0f172a;padding:8px;border-radius:8px"><b id="aEarn">R0</b><br><span class="small">Earn</span></div></div>
 </div>
-<div class="card">
-📋 <b>All Ride History</b>
-<div id="aList" class="small">No rides</div>
-<button class="btn btn-blue" onclick="exportWA()">📤 Export to WhatsApp</button>
-<button class="btn btn-red" onclick="clearAll()">🧹 RESET ALL DATA (Danger)</button>
-<button class="btn btn-dark" onclick="setMode('rider')">⬅ Back to Rider</button>
-</div>
-</div>
-
-<div class="card" style="background:#7f1d1d;border:2px solid #ef4444">
-🆘 <b>SOS Hold 3s</b>
-<button style="width:100%;padding:16px;background:#ef4444;border:none;border-radius:10px;font-weight:900;color:#fff;margin-top:6px" onmousedown="sos()" ontouchstart="sos()">HOLD SOS</button>
+<div class="card"><b>👩‍✈️ Drivers (Photo Verified)</b><div id="aDriverList"></div></div>
+<div class="card"><b>Rides</b><div id="aList" class="small"></div><button class="btn btn-red" onclick="clearAll()">RESET ALL</button></div>
 </div>
 
 <script>
 let wallet=parseFloat(localStorage.getItem('wallet')||0);
 let dWallet=parseFloat(localStorage.getItem('dWallet')||0);
 let rides=JSON.parse(localStorage.getItem('rides')||'[]');
+let drivers=JSON.parse(localStorage.getItem('drivers')||'[]');
+let curDriver=JSON.parse(localStorage.getItem('curDriver')||'null');
 let isOnline=localStorage.getItem('online')==='true';
-let vCount=parseInt(localStorage.getItem('vCount')||0);
-let mode=localStorage.getItem('mode')||'rider';
-function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('online',isOnline);localStorage.setItem('vCount',vCount);update();}
-function update(){document.getElementById('wallet').innerText='R '+wallet.toFixed(2);document.getElementById('dWallet').innerText='R '+dWallet.toFixed(2);document.getElementById('aRides').innerText=rides.length;document.getElementById('aEarn').innerText='R '+dWallet.toFixed(2);document.getElementById('aWallet').innerText='R '+wallet.toFixed(2);document.getElementById('aOnline').innerText=isOnline?'🟢 ONLINE':'🔴 OFFLINE';document.getElementById('aVouch').innerText=vCount;document.getElementById('reqCount').innerText=rides.length;}
-function setMode(m){mode=m;localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('adminView').style.display=m==='admin'?'block':'none';document.getElementById('bR').className=m==='rider'?'active r-on':'';document.getElementById('bD').className=m==='driver'?'active d-on':'';document.getElementById('bA').className=m==='admin'?'active a-on':'';if(m!=='rider')render();}
-function askAdmin(){let p=prompt('Enter Admin PIN (hint: 4321)');if(p==='4321'){setMode('admin');}else if(p!==null){alert('Wrong PIN! Boss only.');}}
-function gen(a){let c='AIRIDE-R'+a+'-'+Math.random().toString(36).substring(2,6).toUpperCase()+'-'+Date.now().toString().slice(-4);navigator.clipboard.writeText(c);document.getElementById('vCode').value=c;alert('Copied: '+c);}
-function redeem(){let c=document.getElementById('vCode').value.trim();let m=c.match(/R(\d+)/);if(!m)return alert('Invalid');wallet+=parseInt(m[1]);vCount++;document.getElementById('walletMsg').innerText='✅ R'+m[1]+' added';document.getElementById('vCode').value='';save();}
-function requestRide(){let f=document.getElementById('from').value,t=document.getElementById('to').value;if(!f||!t)return alert('From & To');let r={id:Date.now(),from:f,to:t,time:new Date().toLocaleTimeString(),fare:60+Math.floor(Math.random()*60)};rides.unshift(r);save();document.getElementById('rideStatus').innerHTML='✅ Sent! Searching driver near '+f+'...<br>🚗 Noma 4.9★ - 2min - R'+r.fare;render();}
-function toggleOnline(init){if(!init)isOnline=!isOnline;save();let b=document.getElementById('onlineBtn');if(isOnline){b.innerText='🔴 Go OFFLINE';b.className='btn btn-red';document.getElementById('dStatus').innerText='🟢 ONLINE';}else{b.innerText='🟢 Go ONLINE';b.className='btn btn-green';document.getElementById('dStatus').innerText='OFFLINE';}render();}
-function render(){let d=document.getElementById('requests');let a=document.getElementById('aList');if(rides.length===0){d.innerHTML='No requests';a.innerHTML='No rides yet';return;}d.innerHTML=rides.map(r=>`<div class="ride-item"><b>${r.from} → ${r.to}</b> <small>${r.time} R${r.fare}</small><br><button class="btn btn-green" style="padding:8px" onclick="accept(${r.id})">Accept R${r.fare}</button></div>`).join('');a.innerHTML=rides.map(r=>`• ${r.time} ${r.from}→${r.to} R${r.fare}`).join('<br>');}
-function accept(id){let r=rides.find(x=>x.id===id);dWallet+=r.fare;rides=rides.filter(x=>x.id!==id);save();render();alert('Accepted! R'+r.fare+' added');}
-function clearAll(){if(confirm('Delete ALL? Wallet, Earnings, Rides?')){wallet=0;dWallet=0;rides=[];vCount=0;isOnline=false;localStorage.clear();save();render();alert('Reset done');setMode('rider');}}
-function exportWA(){let txt=`AiRide Report ${new Date().toLocaleDateString()}%0ARides:${rides.length} Earnings:R${dWallet} Wallet:R${wallet}`;window.open('https://wa.me/?text='+txt,'_blank');}
-function sos(){setTimeout(()=>{window.open('https://wa.me/?text='+encodeURIComponent('🆘 AiRide SOS! Help! https://maps.google.com/?q=-29.8587,31.0218'),'_blank');},800);}
-update();setMode(mode);if(isOnline)toggleOnline(true);render();
+let photoData=localStorage.getItem('tempPhoto')||'';
+function save(){localStorage.setItem('wallet',wallet);localStorage.setItem('dWallet',dWallet);localStorage.setItem('rides',JSON.stringify(rides));localStorage.setItem('drivers',JSON.stringify(drivers));localStorage.setItem('curDriver',JSON.stringify(curDriver));localStorage.setItem('online',isOnline);localStorage.setItem('tempPhoto',photoData);upd();}
+function upd(){document.getElementById('wallet').innerText='R '+wallet.toFixed(2);document.getElementById('dWallet').innerText='R '+dWallet.toFixed(2);document.getElementById('aRides').innerText=rides.length;document.getElementById('aEarn').innerText='R '+dWallet.toFixed(2);document.getElementById('aDrivers').innerText=drivers.length;document.getElementById('reqCount').innerText=rides.length;}
+function loadPhoto(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(){photoData=r.result;document.getElementById('preview').src=photoData;document.getElementById('preview').style.display='block';save();};r.readAsDataURL(f);}
+function setMode(m){localStorage.setItem('mode',m);document.getElementById('riderView').style.display=m==='rider'?'block':'none';document.getElementById('driverView').style.display=m==='driver'?'block':'none';document.getElementById('adminView').style.display=m==='admin'?'block':'none';document.getElementById('bR').className=m==='rider'?'active r-on':'';document.getElementById('bD').className=m==='driver'?'active d-on':'';document.getElementById('bA').className=m==='admin'?'active a-on':'';checkReg();render();}
+function askAdmin(){let p=prompt('PIN 4321');if(p==='4321')setMode('admin');}
+function gen(a){let c='AIRIDE-R'+a+'-'+Math.random().toString(36).substr(2,4).toUpperCase();navigator.clipboard.writeText(c);document.getElementById('vCode').value=c;}
+function redeem(){let c=document.getElementById('vCode').value;let m=c.match(/R(\d+)/);if(!m)return alert('Invalid');wallet+=parseInt(m[1]);document.getElementById('vCode').value='';save();}
+function checkReg(){if(curDriver){document.getElementById('regForm').style.display='none';document.getElementById('driverDash').style.display='block';document.getElementById('dNameShow').innerText=curDriver.name+' ✅';document.getElementById('dInfoShow').innerText=curDriver.car+' • '+curDriver.plate+' • '+curDriver.area;document.getElementById('dPhotoShow').src=curDriver.photo||'';if(curDriver.photo)document.getElementById('preview').src=curDriver.photo;}else{document.getElementById('regForm').style.display='block';document.getElementById('driverDash').style.display='none';if(photoData){document.getElementById('preview').src=photoData;document.getElementById('preview').style.display='block';}}}
+function registerDriver(){let n=document.getElementById('dName').value,p=document.getElementById('dPhone').value,id=document.getElementById('dID').value,car=document.getElementById('dCar').value,pl=document.getElementById('dPlate').value,ar=document.getElementById('dArea').value,w=document.getElementById('dWoman').checked;if(!photoData)return document.getElementById('regMsg').innerText='❌ Add photo first!';if(!n||!p||!id||!car||!pl||!ar)return document.getElementById('regMsg').innerText='❌ Fill all *';if(!w)return document.getElementById('regMsg').innerText='❌ Confirm woman driver';curDriver={name:n,phone:p,id:id,car:car,plate:pl,area:ar,photo:photoData,time:new Date().toLocaleString()};drivers.unshift(curDriver);save();checkReg();alert('✅ Registered with photo!');}
+function editDriver(){curDriver=null;save();checkReg();}
+function requestRide(){let f=document.getElementById('from').value,t=document.getElementById('to').value;if(!f||!t)return alert('From To');let r={id:Date.now(),from:f,to:t,time:new Date().toLocaleTimeString(),fare:60+Math.floor(Math.random()*40)};rides.unshift(r);save();document.getElementById('rideStatus').innerHTML='✅ Sent R'+r.fare;render();}
+function toggleOnline(i){if(!i)isOnline=!isOnline;save();let b=document.getElementById('onlineBtn');b.innerText=isOnline?'🔴 OFFLINE':'🟢 ONLINE';b.className=isOnline?'btn btn-red':'btn btn-green';document.getElementById('dStatus').innerText=isOnline?'🟢 ONLINE':'OFFLINE';render();}
+function render(){let d=document.getElementById('requests'),a=document.getElementById('aList'),ad=document.getElementById('aDriverList');d.innerHTML=rides.length?rides.map(r=>`<div style="background:#0f172a;padding:8px;border-radius:8px;margin:5px 0"><b>${r.from}→${r.to}</b> R${r.fare}<br><button class="btn btn-green" style="padding:6px" onclick="accept(${r.id})">Accept</button></div>`).join(''):'No requests';a.innerHTML=rides.length?rides.map(r=>`• ${r.from}→${r.to} R${r.fare}`).join('<br>'):'No rides';ad.innerHTML=drivers.length?drivers.map(dr=>`<div class="driver-card"><img src="${dr.photo}" style="width:50px;height:50px;border-radius:50%;object-fit:cover"><div><b>${dr.name}</b><br><span class="small">${dr.phone} • ${dr.car} ${dr.plate}<br>${dr.area} • ${dr.time}</span></div></div>`).join(''):'No drivers';}
+function accept(id){let r=rides.find(x=>x.id===id);dWallet+=r.fare;rides=rides.filter(x=>x.id!==id);save();render();alert('Accepted');}
+function clearAll(){if(confirm('RESET?')){localStorage.clear();location.reload();}}
+upd();setMode(localStorage.getItem('mode')||'rider');render();checkReg();
+if(curDriver&&curDriver.photo){document.getElementById('dPhotoShow').src=curDriver.photo;}
 </script>
 </body>
 </html>
